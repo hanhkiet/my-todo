@@ -10,7 +10,7 @@ class Login extends React.Component {
                         <i class="fa-solid fa-check-double text-6xl text-blue-600"></i>
                         <h1 className=' text-4xl font-bold'>Sign in to your account</h1>
                         <p>
-                            Or
+                            Or{' '}
                             <a href="#" className=' font-medium text-blue-600 hover:text-blue-400'> sign up here</a>
                         </p>
                     </div>
