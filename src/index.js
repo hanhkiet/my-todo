@@ -4,16 +4,18 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import AuthenticatingEntry from './pages/authenticate-entry.page';
+import Register from './pages/register.page';
 import NotFoundPage from './pages/not-found.page';
+import Main from './pages/main.page';
 
 ReactDOM.render(
   <React.StrictMode>
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<App />} />
-        <Route path="sign-in" element={<AuthenticatingEntry action="sign-in" />} />
-        <Route path="sign-up" element={<AuthenticatingEntry action="sign-up" />} />
+        <Route path="sign-in" element={<Register action="sign-in" />} />
+        <Route path="sign-up" element={<Register action="sign-up" />} />
+        <Route path="main" element={<Main />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
