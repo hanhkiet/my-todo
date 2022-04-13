@@ -17,7 +17,7 @@ export default function Register({ action }) {
                                 <h1 className=' text-4xl font-bold'>Sign in to your account</h1>
                                 <p>
                                     Or{' '}
-                                    <Link to="/sign-up" className='font-medium outline-none text-blue-600 hover:text-blue-400 focus:text-blue-400'> sign up here</Link>
+                                    <Link to="/signup" className='font-medium outline-none text-blue-600 hover:text-blue-400 focus:text-blue-400'> sign up here</Link>
                                 </p>
                             </>
                             :
@@ -25,7 +25,7 @@ export default function Register({ action }) {
                                 <h1 className=' transition delay-1000 ease-in-out text-4xl font-bold'>Sign up</h1>
                                 <p>
                                     Already have account?
-                                    <Link to="/sign-in" className='font-medium outlinenone text-blue-600 hover:text-blue-400 focus:text-blue-400'> sign in here</Link>
+                                    <Link to="/signin" className='font-medium outlinenone text-blue-600 hover:text-blue-400 focus:text-blue-400'> sign in here</Link>
                                 </p>
                             </>
                     }
