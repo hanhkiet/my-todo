@@ -1,7 +1,7 @@
 // Hook (use-auth.js)
 import React, { useState, useEffect, useContext, createContext } from "react";
 import { auth } from "../firebase";
-import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { createUserWithEmailAndPassword, GithubAuthProvider, GoogleAuthProvider, onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup, signOut } from "firebase/auth";
 
 const authContext = createContext();
 // Provider component that wraps your app and makes auth object ...
@@ -42,6 +42,26 @@ function useProvideAuth() {
                 setUser(false);
             });
     };
+
+    const signinWithThirdParty = (party) => {
+        switch (party) {
+            case 'google':
+                return signInWithPopup(auth, new GoogleAuthProvider())
+                    .then((response) => {
+                        setUser(response.user);
+                        return response.user;
+                    });
+            case 'github':
+                return signInWithPopup(auth, new GithubAuthProvider())
+                    .then((response) => {
+                        setUser(response.user);
+                        return response.user;
+                    });
+            default:
+                throw new Error('unvalid party');
+        }
+    }
+
     // Subscribe to user on mount
     // Because this sets state in the callback it will cause any ...
     // ... component that utilizes this hook to re-render with the ...
@@ -61,6 +81,7 @@ function useProvideAuth() {
     return {
         user,
         signin,
+        signinWithThirdParty,
         signup,
         signout
     };
