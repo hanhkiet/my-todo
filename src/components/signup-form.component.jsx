@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../hooks/use-auth";
+import { useAuth } from "../hooks/useAuth";
 
 /* eslint-disable jsx-a11y/anchor-is-valid */
 export default function SignUpForm() {
@@ -43,7 +43,7 @@ export default function SignUpForm() {
 
                 </div>
                 <button onClick={handleSignUp}
-                    className='transition-colors delay-75 w-full outline-none font-medium bg-blue-600
+                    className='transition-colors duration-100 w-full outline-none font-medium bg-blue-600
                      hover:bg-blue-500 focus:bg-blue-500 py-2 rounded-md 
                      text-white cursor-pointer'>
                     Sign up

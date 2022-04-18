@@ -1,27 +1,25 @@
-import React, { useState } from 'react';
-import useRequireAuth from '../hooks/use-require-auth';
-import { Navigate } from 'react-router-dom';
+import React from 'react';
+import useRequireAuth from '../hooks/useRequireAuth';
 import SideBar from '../components/sidebar-component';
 import MainBoard from '../components/main-board.component';
+import useToggle from '../hooks/useToggle';
+import { firestore } from '../firebase';
+import useFirestoreQuery from '../hooks/useFirestoreQuery';
 
 export default function Dashboard() {
 
-    const [showDetail, setShowDetail] = useState(false);
+    const [showSidebar, setShowSidebar] = useToggle(true);
 
-    const { user, signout } = useRequireAuth();
+    const { user } = useRequireAuth();
 
     if (!user) {
         return <h1>Loading...</h1>
     }
 
-    const handleSignout = () => {
-        signout().then(() => <Navigate to='/signin' />);
-    }
-
     console.log('render dashboard');
 
     return <div className=' h-screen w-screen flex'>
-        <SideBar showDetail={showDetail} />
-        <MainBoard />
+        <SideBar showDetail={showSidebar} />
+        <MainBoard toggleSidebar={setShowSidebar} />
     </div>;
 }

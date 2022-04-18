@@ -16,8 +16,8 @@
 
 // Hook (use-require-auth.js)
 import { useEffect } from "react";
-import { useAuth } from "./use-auth.js";
-import { useRouter } from "./use-router.js";
+import { useAuth } from "./useAuth";
+import { useRouter } from "./useRouter";
 
 export default function useRequireAuth(redirectUrl = "/signin") {
     const auth = useAuth();

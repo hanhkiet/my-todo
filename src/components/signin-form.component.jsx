@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../hooks/use-auth";
+import { useAuth } from "../hooks/useAuth";
 
 /* eslint-disable jsx-a11y/anchor-is-valid */
 export default function SignInForm() {
@@ -55,7 +55,7 @@ export default function SignInForm() {
                         <a href="#" className='font-semibold outline-none text-blue-600 hover:text-blue-400 focus:text-blue-400 focus:decoration-blue-300'>Forgot your password?</a>
                     </div>
                 </div>
-                <button onClick={handleSignin} className='transition-colors ease-in-out delay-75 w-full outline-none font-medium bg-blue-600
+                <button onClick={handleSignin} className='transition-colors ease-in-out duration-100 w-full outline-none font-medium bg-blue-600
                  hover:bg-blue-500 focus:bg-blue-500 py-2 rounded-md 
                  text-white cursor-pointer'>Sign in</button>
             </div>
@@ -63,14 +63,14 @@ export default function SignInForm() {
                 <p className=' text-md text-gray-400'>Or continue with</p>
                 <div className=' flex items-center gap-3'>
                     <button onClick={() => handleSigninWithThirdParty('google')}
-                        className='transition-colors delay-75 group border-2 outline-none
+                        className='transition-colors duration-100 group border-2 outline-none
                          border-red-500 hover:bg-red-500 focus:bg-red-500 rounded-lg p-1 basis-1/2'>
                         <i className="fa-brands fa-google text-2xl text-red-500
                          group-hover:text-white group-focus:text-white"></i>
                     </button>
 
                     <button onClick={() => handleSigninWithThirdParty('github')}
-                        className='transition-colors delay-75 group border-2 outline-none
+                        className='transition-colors duration-100 group border-2 outline-none
                          border-black hover:bg-black focus:bg-black rounded-lg p-1 basis-1/2'>
                         <i className="fa-brands fa-github text-2xl text-black
                          group-hover:text-white group-focus:text-white"></i>

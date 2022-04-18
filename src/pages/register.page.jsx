@@ -1,12 +1,14 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
+import { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import SignInForm from '../components/signin-form.component';
 import SignUpForm from '../components/signup-form.component';
-import { useAuth } from '../hooks/use-auth';
+import { useAuth } from '../hooks/useAuth';
 
 export default function Register({ action }) {
 
     const auth = useAuth();
+    const [error, setError] = useState(null);
 
     console.log(auth);
 
