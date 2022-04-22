@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import useRequireAuth from '../hooks/useRequireAuth';
 import SideBar from '../components/sidebar-component';
 import MainBoard from '../components/main-board.component';
 import useToggle from '../hooks/useToggle';
+import { useFirestoreQuery } from '../hooks/useFirestoreQuery';
 import { firestore } from '../firebase';
-import useFirestoreQuery from '../hooks/useFirestoreQuery';
 
 export default function Dashboard() {
 
@@ -12,11 +12,12 @@ export default function Dashboard() {
 
     const { user } = useRequireAuth();
 
+
     if (!user) {
         return <h1>Loading...</h1>
     }
 
-    console.log('render dashboard');
+    console.log(user.uid);
 
     return <div className=' h-screen w-screen flex'>
         <SideBar showDetail={showSidebar} />
