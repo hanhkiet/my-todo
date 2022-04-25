@@ -13,7 +13,9 @@ function App() {
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="signin" element={<Register action="sign-in" />} />
         <Route path="signup" element={<Register action="sign-up" />} />
-        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="dashboard" element={<Dashboard />}>
+          <Route path=":collectionId" element={<Dashboard />} />
+        </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Suspense>

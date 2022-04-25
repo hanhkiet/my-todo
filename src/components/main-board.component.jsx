@@ -1,12 +1,34 @@
 import React from 'react';
 import { MenuIcon, SearchIcon } from '@heroicons/react/solid';
+import { useFirestoreQuery } from '../hooks/useFirestoreQuery';
+import { getDocs, collection, doc, getDoc } from 'firebase/firestore';
+import { firestore } from "../firebase";
+import useRequireAuth from '../hooks/useRequireAuth';
 
-export default function MainBoard({ toggleSidebar }) {
+export default function MainBoard({ toggleSidebar, collectionId }) {
+
+    const { user } = useRequireAuth();
+
+    console.log(user.uid);
+    console.log(collectionId);
+
+    const { data, status, error } = useFirestoreQuery(getDocs(collection(
+        firestore, 'datas', user.uid, 'todo-lists', collectionId, 'tasks')));
+
+    if (status === 'loading') {
+        return <p>Loading</p>
+    }
+
+    console.log(data.docs);
+
+    if (error) {
+        console.log(error);
+    }
 
     return (
-        <div className='flex-grow bg-slate-100 space-y-2'>
+        <div className='grow bg-slate-100 space-y-2 z-1 overflow-y-auto'>
             {/* Function bar */}
-            <div className='w-full p-2 flex items-center justify-between pr-12'>
+            <div className='w-full p-2 flex items-center justify-between pr-12 sticky z-10 top-0 bg-slate-200 bg-opacity-75'>
                 <button onClick={toggleSidebar} className='outline-none hover:bg-slate-200 rounded-sm'>
                     <MenuIcon className='h-8 w-8 text-blue-500 cursor-pointer' />
                 </button>
@@ -17,7 +39,8 @@ export default function MainBoard({ toggleSidebar }) {
                 </div>
             </div>
             {/* Tasks */}
-            <div className='w-full h-full'></div>
+            <div className='w-full flex flex-wrap justify-around gap-6 p-2 z-1'>
+            </div>
         </div>
     );
 }
