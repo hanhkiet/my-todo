@@ -1,4 +1,3 @@
-import { firestore } from '../firebase';
 import { useReducer, useEffect } from 'react';
 import useMemoCompare from './useMemoCompare';
 
@@ -48,7 +47,7 @@ export function useFirestoreQuery(query) {
 
     const [state, dispatch] = useReducer(reducer, initialState);
 
-    const queryCached = useMemoCompare(query, (prevQuery) => {
+    const queryCached = useMemoCompare(query, (query, prevQuery) => {
         return prevQuery && query && query.toString() === prevQuery.toString();
     });
 

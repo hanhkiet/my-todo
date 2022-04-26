@@ -1,32 +1,11 @@
 import { CalculatorIcon, HeartIcon, PlusIcon, TrendingUpIcon } from "@heroicons/react/outline";
-import { collection, getDocs } from "firebase/firestore";
 import { Link } from "react-router-dom";
-import { firestore } from "../firebase";
-import { useFirestoreQuery } from "../hooks/useFirestoreQuery";
-import useRequireAuth from "../hooks/useRequireAuth";
-import TaskList from "./task-list.component";
+import TaskList from "./tasklist.component";
 
 const styles = 'transition-colors duration-100 hover:bg-blue-100 hover:drop-shadow-sm' +
     'focus:bg-blue-100 focus:drop-shadow-sm py-2 px-3 rounded-md outline-none flex items-center space-x-3';
 
-export default function Collection({ showDetail }) {
-
-    const { user } = useRequireAuth();
-
-    const { data, status, error } = useFirestoreQuery(
-        getDocs(collection(firestore, 'datas', user.uid, 'todo-lists')));
-
-    const handleCreatingList = (event) => {
-
-    }
-
-    if (status === 'loading') {
-        return <p>Loading</p>;
-    }
-
-    if (error) {
-        console.log(error);
-    }
+export default function Collection({ showDetail, data }) {
 
     return (
         <>
@@ -62,7 +41,7 @@ export default function Collection({ showDetail }) {
                     ))
                 }
                 <li key='create'>
-                    <button onClick={handleCreatingList} className={`${styles} ${showDetail ? 'w-full' : null}`}>
+                    <button className={`${styles} ${showDetail ? 'w-full' : null}`}>
                         <PlusIcon className="h-6 w-6 text-blue-500" />
                         {showDetail ? <p>New</p> : null}
                     </button>
