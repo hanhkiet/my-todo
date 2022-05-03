@@ -1,10 +1,20 @@
-export default function Task() {
+import { CalendarIcon } from '@heroicons/react/outline';
+import { CheckCircleIcon, MenuAlt2Icon } from '@heroicons/react/outline';
+
+export default function Task({ title, description }) {
+
     return (
-        <div className="relative bg-slate-200 basis-1/5 rounded-md z-1 h-fit p-4 space-y-2">
-            <div className="rounded-full bg-white h-6 w-6 absolute -top-2 -left-2"></div>
-            <div className="w-full h-fit space-y-2">
-                <h2 className="text-3xl">Title</h2>
-                <p>Description</p>
+        <div className="group relative border-2 px-4 py-2 rounded-md space-y-2 hover:border-slate-400">
+            <CheckCircleIcon className="absolute -top-3 -left-3 h-6 w-6 bg-white rounded-full
+             text-gray-600 opacity-0 group-hover:opacity-100 transition-all duration-75 cursor-pointer 
+             hover:bg-black hover:text-white" />
+            <div className="">
+                <h2 className="text-2xl">{title}</h2>
+                <p>{description}</p>
+            </div>
+            <div className='flex space-x-2'>
+                <MenuAlt2Icon className='h-4 w-4 text-blue-400 hover:text-blue-600 cursor-pointer' />
+                <CalendarIcon className='h-4 w-4 text-red-400 hover:text-red-600 cursor-pointer' />
             </div>
         </div>
     );

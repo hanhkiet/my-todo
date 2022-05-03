@@ -1,31 +1,46 @@
-import React from "react";
+import React, { useCallback } from "react";
 import UserBar from "./user-bar.component";
 import Collection from "./collection.component";
 import useRequireAuth from "../hooks/useRequireAuth";
 import { useFirestoreQuery } from "../hooks/useFirestoreQuery";
-import { collection, getDocs } from "firebase/firestore";
+import { addDoc, collection, getDocs } from "firebase/firestore";
 import { firestore } from "../firebase";
+import { useSidebar } from "../context/SidebarContext";
 
-export default function SideBar({ showDetail = true }) {
+const sidebar_style = 'bg-blue-200 space-y-3 drop-shadow-md p-2 z-10';
 
+
+export default function SideBar() {
+
+    const { showSidebar } = useSidebar();
     const { user } = useRequireAuth();
 
-    const { data: lists, status, error } = useFirestoreQuery(
-        getDocs(collection(firestore, 'datas', user.uid, 'todo-lists')));
+    const getLists = () => getDocs(collection(firestore, 'datas', user.uid, 'todo-lists'));
+    const addList = (data) => addDoc(collection(firestore, 'datas', user.uid, 'todo-lists'), data);
 
-    if (error) {
-        console.log(error);
+    const { data, status, error, update } = useFirestoreQuery(getLists(user.uid));
+
+    const handleAddList = useCallback((data) => {
+        addList(data).then((response) => {
+            update({ id: response.id, name: data.name });
+        }).catch((error) => {
+            console.log(error);
+        });
+    }, []);
+
+
+    if (status === 'loading') {
+        return <p>Loading...</p>;
     }
 
     return (
-        <div className='bg-blue-200 space-y-3 drop-shadow-md p-2 z-10'>
-            <UserBar showDetail={showDetail} />
+        <div className={sidebar_style}>
+            <UserBar showDetail={showSidebar} />
             {
-                status === 'success'
-                    ? <Collection showDetail={showDetail} data={lists} />
+                status === 'success' || 'updated'
+                    ? <Collection lists={data} addList={handleAddList} />
                     : null
             }
-
         </div >
     );
 }

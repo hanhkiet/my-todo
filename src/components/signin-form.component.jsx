@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
 /* eslint-disable jsx-a11y/anchor-is-valid */
+
 export default function SignInForm() {
 
     const emailRef = useRef();
@@ -51,10 +52,8 @@ export default function SignInForm() {
                         <label htmlFor="remember-me" className='ml-2 block text-md text-gray-900'> Remember me </label>
                     </div>
 
-                    <div className='text-sm'>
-                        <a href="#" className='font-semibold outline-none text-blue-600 hover:text-blue-400 focus:text-blue-400 focus:decoration-blue-300'>Forgot your password?</a>
-                    </div>
                 </div>
+
                 <button onClick={handleSignin} className='transition-colors ease-in-out duration-100 w-full outline-none font-medium bg-blue-600
                  hover:bg-blue-500 focus:bg-blue-500 py-2 rounded-md 
                  text-white cursor-pointer'>Sign in</button>

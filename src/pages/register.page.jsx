@@ -10,8 +10,6 @@ export default function Register({ action }) {
     const auth = useAuth();
     const [error, setError] = useState(null);
 
-    console.log(auth);
-
     if (auth !== null && auth.user !== false) {
         return <Navigate to='/dashboard' replace />
     }

@@ -1,13 +1,11 @@
 import React, { useEffect } from 'react';
 import useRequireAuth from '../hooks/useRequireAuth';
 import SideBar from '../components/sidebar-component';
-import useToggle from '../hooks/useToggle';
 import FunctionBar from '../components/function-bar.component';
 import { Outlet, useNavigate, useParams } from 'react-router-dom';
+import { ProvideSidebar } from '../context/SidebarContext';
 
 export default function Dashboard() {
-
-    const [showSidebar, setShowSidebar] = useToggle(true);
 
     const { user } = useRequireAuth();
 
@@ -26,11 +24,13 @@ export default function Dashboard() {
 
     return (
         <div className='h-screen w-screen flex flex-row'>
-            <SideBar showDetail={showSidebar} />
-            <div className='grow bg-slate-100 space-y-2 z-1 overflow-y-auto'>
-                <FunctionBar toggleSidebar={setShowSidebar} />
-                <Outlet />
-            </div>
+            <ProvideSidebar>
+                <SideBar />
+                <div className='grow space-y-2 z-1 overflow-y-auto'>
+                    <FunctionBar />
+                    <Outlet />
+                </div>
+            </ProvideSidebar>
         </div>
     );
 }
