@@ -1,25 +1,13 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import useRequireAuth from '../hooks/useRequireAuth';
 import SideBar from '../components/sidebar-component';
 import FunctionBar from '../components/function-bar.component';
-import { Outlet, useNavigate, useParams } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import { ProvideSidebar } from '../context/SidebarContext';
-import { useCollection, useCollectionOnce } from 'react-firebase-hooks/firestore';
-import { firestore } from '../firebase';
-import { collection } from 'firebase/firestore';
 
 export default function Dashboard() {
 
     const { user } = useRequireAuth();
-
-    const { collectionId } = useParams();
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        if (!collectionId) {
-            navigate('today');
-        }
-    }, []);
 
     if (!user) {
         return <h1>Loading...</h1>;

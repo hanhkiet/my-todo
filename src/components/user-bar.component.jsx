@@ -6,6 +6,7 @@ import { useOnClickOutside } from '../hooks/useOnClickOutside';
 import useRequireAuth from '../hooks/useRequireAuth';
 import { Navigate } from 'react-router-dom';
 import { useSidebar } from '../context/SidebarContext';
+import Property from './property.component';
 
 const user_button = 'flex items-center justify-center space-x-1 outline-none' +
     'transition-colors duration-100 focus:bg-blue-100 hover:bg-blue-100 rounded-md p-2';
@@ -38,17 +39,16 @@ export default function UserBar() {
             </button>
             {
                 open
-                    ? <div className='absolute z-100 min-w-fit top-2 rounded-md left-full 
-                            mx-3 bg-slate-200 overflow-hidden'>
-                        <button className='w-48 h-12 p-2 flex items-center space-x-3 hover:bg-slate-300'>
+                    ? <Property>
+                        <button className='w-40 h-9 p-2 flex items-center space-x-3 hover:bg-slate-300'>
                             <CogIcon className='icon' />
                             <p>Settings</p>
                         </button>
-                        <button onClick={handleSignout} className='w-48 h-12 p-2 flex items-center space-x-3 hover:bg-slate-300'>
+                        <button onClick={handleSignout} className='w-40 h-9 p-2 flex items-center space-x-3 hover:bg-slate-300'>
                             <LogoutIcon className='icon' />
                             <p>Log out</p>
                         </button>
-                    </div>
+                    </Property>
                     : null
             }
         </div>

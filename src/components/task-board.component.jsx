@@ -1,14 +1,17 @@
 import { collection } from "firebase/firestore";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useParams } from "react-router-dom";
 import { firestore } from "../firebase";
 import useRequireAuth from "../hooks/useRequireAuth";
 import { useDocument } from 'react-firebase-hooks/firestore';
 import Task from "./task.component";
+import { PlusCircleIcon } from "@heroicons/react/outline";
 
 export default function TaskBoard() {
 
     const { user } = useRequireAuth();
+
+    const [inputing, setInputing] = useState(false);
 
     const { collectionId } = useParams();
 
@@ -30,8 +33,16 @@ export default function TaskBoard() {
 
     return (
         <div className='w-full h-fit px-32 lsg:px-48 xl:px-60 py-6 z-1'>
-            <ul className="space-y-6">
+            <ul className="space-y-4">
                 {lists}
+                <li id='create'>
+                    <div className="py-2 rounded-md space-y-1">
+                        <div className="group flex items-center space-x-3">
+                            <PlusCircleIcon className="h-5 w-5 text-blue-300 group-hover:text-blue-500" />
+                            <p className="text-xl text-gray-300 group-hover:text-gray-500">New task</p>
+                        </div>
+                    </div>
+                </li>
             </ul>
         </div>
     );

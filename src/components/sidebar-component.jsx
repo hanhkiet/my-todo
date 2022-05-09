@@ -2,30 +2,60 @@ import React, { useCallback } from "react";
 import UserBar from "./user-bar.component";
 import Collection from "./collection.component";
 import useRequireAuth from "../hooks/useRequireAuth";
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, setDoc } from "firebase/firestore";
 import { firestore } from "../firebase";
 import { useSidebar } from "../context/SidebarContext";
 import { useCollection } from 'react-firebase-hooks/firestore';
+import { useNavigate } from "react-router-dom";
 
 const sidebar_style = 'bg-blue-200 space-y-3 drop-shadow-md p-2 z-10';
-
 
 export default function SideBar() {
 
     const { showSidebar } = useSidebar();
+    const navigate = useNavigate();
     const { user } = useRequireAuth();
 
-    const addList = (data) => addDoc(collection(firestore, 'datas', user.uid, 'todo-lists'), data);
+    const addList = useCallback((data) =>
+        addDoc(collection(firestore, 'datas', user.uid, 'todo-lists'), data)
+        , [user.uid]);
+
+    const deleteList = useCallback((id) =>
+        deleteDoc(doc(firestore, 'datas', user.uid, 'todo-lists', id))
+        , [user.uid]);
+
+    const changeDataList = useCallback((id, data) =>
+        setDoc(doc(firestore, 'datas', user.uid, 'todo-lists', id), data, { merge: true })
+        , [user.uid]);
 
     const [data, loading, err] = useCollection(collection(firestore, 'datas', user.uid, 'todo-lists'));
 
     const handleAddList = useCallback((data) => {
         addList(data).then((response) => {
+            navigate(response.id);
+        }).catch((error) => {
+            console.log(error);
+        })
+    }, [addList, navigate]);
+
+    const handleDeleteList = useCallback((id) => {
+        deleteList(id).then((response) => {
+            console.log(response);
+        }).then(() => {
+            navigate('/dashboard');
+        })
+            .catch((error) => {
+                console.log(error);
+            });
+    }, [deleteList, navigate]);
+
+    const handleChangeDataList = useCallback((id, data) => {
+        changeDataList(id, data).then((response) => {
             console.log(response);
         }).catch((error) => {
             console.log(error);
         })
-    }, []);
+    }, [changeDataList]);
 
     if (loading) {
         return <p>Loading...</p>;
@@ -41,7 +71,11 @@ export default function SideBar() {
     return (
         <div className={sidebar_style}>
             <UserBar showDetail={showSidebar} />
-            <Collection lists={lists} addList={handleAddList} />
+            {loading
+                ? <p>Loading...</p>
+                : <Collection lists={lists} addList={handleAddList}
+                    deleteList={handleDeleteList} changeDataList={handleChangeDataList} />
+            }
         </div >
     );
 }
