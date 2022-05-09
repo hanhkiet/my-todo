@@ -4,6 +4,9 @@ import SideBar from '../components/sidebar-component';
 import FunctionBar from '../components/function-bar.component';
 import { Outlet, useNavigate, useParams } from 'react-router-dom';
 import { ProvideSidebar } from '../context/SidebarContext';
+import { useCollection, useCollectionOnce } from 'react-firebase-hooks/firestore';
+import { firestore } from '../firebase';
+import { collection } from 'firebase/firestore';
 
 export default function Dashboard() {
 

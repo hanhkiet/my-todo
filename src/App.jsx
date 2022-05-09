@@ -7,6 +7,7 @@ const NotFoundPage = React.lazy(() => import('./pages/not-found.page'));
 const Dashboard = React.lazy(() => import('./pages/dashboard.page'));
 const TaskBoard = React.lazy(() => import('./components/task-board.component'));
 
+
 function App() {
   return (
     <Suspense fallback={<h1>Loading...</h1>}>

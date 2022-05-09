@@ -1,4 +1,4 @@
-import { CalculatorIcon, HeartIcon, PlusIcon, SunIcon, TrendingUpIcon } from "@heroicons/react/outline";
+import { HeartIcon, PlusIcon, SunIcon, TrendingUpIcon } from "@heroicons/react/outline";
 import { useCallback, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useSidebar } from "../context/SidebarContext";

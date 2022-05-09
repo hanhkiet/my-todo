@@ -1,9 +1,9 @@
-import { collection, getDocs } from "firebase/firestore";
+import { collection } from "firebase/firestore";
 import { useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { firestore } from "../firebase";
-import { useFirestoreQuery } from "../hooks/useFirestoreQuery";
 import useRequireAuth from "../hooks/useRequireAuth";
+import { useDocument } from 'react-firebase-hooks/firestore';
 import Task from "./task.component";
 
 export default function TaskBoard() {
@@ -12,32 +12,26 @@ export default function TaskBoard() {
 
     const { collectionId } = useParams();
 
-    console.log(collectionId);
-
     const getTasks = useCallback(() =>
-        getDocs(collection(firestore, 'datas', user.uid, 'todo-lists', collectionId, 'tasks'))
-        , [user.uid, collectionId]);
+        collection(firestore, 'datas', user.uid, 'todo-lists', collectionId, 'tasks')
+        , [collectionId, user.uid]);
 
-    console.log(getTasks.toString());
+    const [data, loading, error] = useDocument(getTasks());
 
-    const { data, status, error } = useFirestoreQuery(getTasks(collectionId));
-
-    if (status === 'loading') {
+    if (loading) {
         return <p>Loading...</p>;
     }
 
-    console.log(data);
-
-    const tasks = data.map((task) => {
-        return <li key={task.id}>
-            <Task title={task.title} description={task.description} />
-        </li>;
+    const lists = data.docs.map((doc) => {
+        return <li key={doc.id}>
+            <Task {...doc.data()} />
+        </li>
     });
 
     return (
-        <div className='w-full h-fit px-16 lg:px-32 xl:px-48 py-6 space-y-4 z-1'>
-            <ul>
-                {tasks}
+        <div className='w-full h-fit px-32 lsg:px-48 xl:px-60 py-6 z-1'>
+            <ul className="space-y-6">
+                {lists}
             </ul>
         </div>
     );

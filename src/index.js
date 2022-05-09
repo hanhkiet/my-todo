@@ -6,6 +6,7 @@ import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from 'react-router-dom';
 import { ProvideAuth } from './hooks/useAuth';
 
+
 ReactDOM.render(
   <React.StrictMode>
     <BrowserRouter>

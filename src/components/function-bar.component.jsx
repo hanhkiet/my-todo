@@ -1,7 +1,7 @@
 import { MenuIcon, SearchIcon } from "@heroicons/react/solid";
 import { useSidebar } from "../context/SidebarContext";
 
-const functionbar_style = 'w-full p-2 flex items-center justify-between pr-12 sticky z-10 top-0 bg-slate-200 bg-opacity-75';
+const functionbar_style = 'w-full p-2 flex items-center justify-between pr-12 sticky z-8 top-0 bg-slate-200 bg-opacity-75';
 
 export default function FunctionBar() {
 
