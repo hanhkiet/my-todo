@@ -7,6 +7,7 @@ import useRequireAuth from '../hooks/useRequireAuth';
 import { Navigate } from 'react-router-dom';
 import { useSidebar } from '../context/SidebarContext';
 import Property from './property.component';
+import { substring } from '../utils/substring';
 
 const user_button = 'flex items-center justify-center space-x-1 outline-none' +
     'transition-colors duration-100 focus:bg-blue-100 hover:bg-blue-100 rounded-md p-2';
@@ -31,8 +32,8 @@ export default function UserBar() {
                 <UserCircleIcon className='h-12 w-12 text-blue-500' />
                 {showSidebar ?
                     <div className='text-left'>
-                        <h2 className='text-lg font-semibold'>{user.displayName}</h2>
-                        <p className='text-xs'>{user.email}</p>
+                        <h2 className='text-lg font-semibold'>{user.displayName ? substring(user.displayName, 20) : "Anonymous"}</h2>
+                        <p className='text-xs'>{substring(user.email, 25)}</p>
                     </div>
                     : null
                 }

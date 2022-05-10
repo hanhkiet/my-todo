@@ -8,7 +8,7 @@ import { useSidebar } from "../context/SidebarContext";
 import { useCollection } from 'react-firebase-hooks/firestore';
 import { useNavigate } from "react-router-dom";
 
-const sidebar_style = 'bg-blue-200 space-y-3 drop-shadow-md p-2 z-10';
+const sidebar_style = 'bg-blue-200 space-y-3 drop-shadow-md p-2 z-10 basis-1/7';
 
 export default function SideBar() {
 
