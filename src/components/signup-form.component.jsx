@@ -15,17 +15,14 @@ export default function SignUpForm() {
         const email = emailRef.current.value;
         const password = passwordRef.current.value;
 
-        console.log(emailRef.current.validity.typeMismatch);
-
         setError(null);
-
-        // signup(email, password)
-        //     .then((response) => {
-        //         console.log(response);
-        //     }).catch((error) => {
-        //         setError(error);
-        //         console.log(error.code);
-        //     });
+        signup(email, password)
+            .then((response) => {
+                console.log(response);
+            }).catch((error) => {
+                setError(error);
+                console.log(error.code);
+            });
     }
 
     return (
@@ -53,6 +50,8 @@ export default function SignUpForm() {
                 </button>
                 <div>
                     {error && error.code === 'auth/email-already-in-use' && <p className="text-red-500">Email has been already in use</p>}
+                    {error && error.code === 'auth/weak-password' && <p className="text-red-500">Weak password</p>}
+                    {error && error.code === 'auth/invalid-email' && <p className="text-red-500">Invalid email</p>}
                 </div>
             </div>
         </div>

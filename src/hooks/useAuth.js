@@ -1,7 +1,10 @@
 // Hook (use-auth.js)
 import React, { useState, useEffect, useContext, createContext } from "react";
 import { auth } from "../firebase";
-import { createUserWithEmailAndPassword, GithubAuthProvider, GoogleAuthProvider, onAuthStateChanged, sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup, signOut } from "firebase/auth";
+import {
+    createUserWithEmailAndPassword, GithubAuthProvider, GoogleAuthProvider, onAuthStateChanged,
+    sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup, signOut
+} from "firebase/auth";
 
 const authContext = createContext();
 // Provider component that wraps your app and makes auth object ...
@@ -44,7 +47,7 @@ function useProvideAuth() {
     };
 
     const sendPasswordReset = (email) => {
-        return sendPasswordResetEmail(email);
+        return sendPasswordResetEmail(auth, email);
     }
 
     const signinWithThirdParty = (party) => {

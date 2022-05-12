@@ -22,7 +22,9 @@ export default function TaskBoard() {
     const [data, loading, error] = useDocument(getTasks());
 
     if (loading) {
-        return <p>Loading...</p>;
+        return <div className="w-full h-fit px-32 lg:px48 xl:px-60 py-6 z-1 flex items-center justify-center">
+            <i className="fa-solid fa-check-double text-xl text-blue-600"></i>
+        </div>;
     }
 
     const lists = data.docs.map((doc) => {
@@ -32,7 +34,7 @@ export default function TaskBoard() {
     });
 
     return (
-        <div className='w-full h-fit px-32 lsg:px-48 xl:px-60 py-6 z-1'>
+        <div className='w-full h-fit px-32 lg:px-48 xl:px-60 py-6 z-1'>
             <ul className="space-y-4">
                 {lists}
                 <li id='create'>

@@ -4,6 +4,7 @@ import SideBar from '../components/sidebar-component';
 import FunctionBar from '../components/function-bar.component';
 import { Outlet, useNavigate, useParams } from 'react-router-dom';
 import { ProvideSidebar } from '../context/SidebarContext';
+import Modal from '../components/modal.component';
 
 export default function Dashboard() {
 
@@ -18,19 +19,20 @@ export default function Dashboard() {
     }, [collectionId, navigate]);
 
     if (!user) {
-        return <h1>Loading...</h1>;
+        return <p>Loading...</p>;
     }
 
 
     return (
-        <div className='h-screen w-screen flex flex-row'>
-            <ProvideSidebar>
+        <ProvideSidebar>
+            <div className='h-screen w-screen flex flex-row'>
                 <SideBar />
                 <div className='grow space-y-2 z-1 overflow-y-auto'>
                     <FunctionBar />
                     <Outlet />
+                    <Modal />
                 </div>
-            </ProvideSidebar>
-        </div>
+            </div >
+        </ProvideSidebar>
     );
 }

@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import useToggle from '../hooks/useToggle';
 import { UserCircleIcon } from '@heroicons/react/solid';
 import { LogoutIcon, CogIcon } from '@heroicons/react/outline';

@@ -58,7 +58,9 @@ export default function SideBar() {
     }, [changeDataList]);
 
     if (loading) {
-        return <p>Loading...</p>;
+        return <div className={sidebar_style}>
+            <i className="fa-solid fa-check-double text-xl text-blue-600"></i>
+        </div>
     }
 
     const lists = data.docs.map((doc) => {
@@ -72,7 +74,7 @@ export default function SideBar() {
         <div className={sidebar_style}>
             <UserBar showDetail={showSidebar} />
             {loading
-                ? <p>Loading...</p>
+                ? <i className="fa-solid fa-check-double text-xl text-blue-600"></i>
                 : <Collection lists={lists} addList={handleAddList}
                     deleteList={handleDeleteList} changeDataList={handleChangeDataList} />
             }

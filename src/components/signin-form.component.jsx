@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { Link } from 'react-router-dom';
@@ -13,28 +13,34 @@ export default function SignInForm() {
     const auth = useAuth();
     const navigate = useNavigate();
 
+    const [error, setError] = useState(null);
+
     const handleSignin = () => {
         const email = emailRef.current.value;
         const password = passwordRef.current.value;
+        setError(null);
 
-        if (email && password) {
-            auth.signin(email, password)
-                .then(() => navigate('/dashboard'))
-                .catch((error) =>
-                    console.log(error));
-        } else {
-            console.log('Empty field');
-        }
+        auth.signin(email, password)
+            .then(() => navigate('/dashboard'))
+            .catch((error) => {
+                setError(error);
+                console.log(error.code);
+            });
+
     }
 
     const handleSigninWithThirdParty = (party) => {
+        setError(null);
         auth.signinWithThirdParty(party)
             .then((user) => navigate('/dashboard'))
-            .catch((error) => console.log(error))
+            .catch((error) => {
+                setError(error);
+                console.log(error.code);
+            });
     }
 
     return (
-        <div className='bg-white p-9 rounded-2xl space-y-10 shadow-xl'>
+        <div className='bg-white p-9 rounded-2xl space-y-5 shadow-xl'>
             <div className='space-y-4'>
                 <div className='space-y-1'>
                     <label htmlFor="email" className='after:content-["*"] after:ml-0.5 after:text-red-500 block text-md font-semibold text-gray-600'>Email</label>
@@ -59,7 +65,13 @@ export default function SignInForm() {
                 <button onClick={handleSignin} className='transition-colors ease-in-out duration-100 w-full outline-none font-medium bg-blue-600
                  hover:bg-blue-500 focus:bg-blue-500 py-2 rounded-md 
                  text-white cursor-pointer'>Sign in</button>
+                <div>
+                    {error && error.code === 'auth/invalid-email' && <p className="text-red-500">Invalid email</p>}
+                    {error && error.code === 'auth/wrong-password' && <p className="text-red-500">Wrong password</p>}
+                    {error && error.code === 'auth/internal-error' && <p className="text-red-500">Something missing</p>}
+                </div>
             </div>
+
             <div className=' text-center space-y-3'>
                 <p className=' text-md text-gray-400'>Or continue with</p>
                 <div className=' flex items-center gap-3'>
@@ -69,6 +81,9 @@ export default function SignInForm() {
                         <i className="fa-brands fa-google text-2xl text-red-500
                          group-hover:text-white group-focus:text-white"></i>
                     </button>
+                </div>
+                <div>
+                    {error && error.code === 'auth/popup-closed-by-user' && <p className="text-red-500">Something went wrong! Try again</p>}
                 </div>
             </div>
         </div>
