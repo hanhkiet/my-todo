@@ -1,15 +1,18 @@
 import { collection } from "firebase/firestore";
 import { useCallback, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Outlet, useNavigate, useParams } from "react-router-dom";
 import { firestore } from "../firebase";
 import useRequireAuth from "../hooks/useRequireAuth";
 import { useDocument } from 'react-firebase-hooks/firestore';
 import Task from "./task.component";
 import { PlusCircleIcon } from "@heroicons/react/outline";
+import TaskDetail from "../pages/task-detail.page";
 
 export default function TaskBoard() {
 
     const { user } = useRequireAuth();
+
+    const navigate = useNavigate();
 
     const [inputing, setInputing] = useState(false);
 
@@ -28,7 +31,7 @@ export default function TaskBoard() {
     }
 
     const lists = data.docs.map((doc) => {
-        return <li key={doc.id}>
+        return <li key={doc.id} onClick={() => navigate(doc.id)}>
             <Task {...doc.data()} />
         </li>
     });
@@ -46,6 +49,7 @@ export default function TaskBoard() {
                     </div>
                 </li>
             </ul>
+            <Outlet />
         </div>
     );
 }

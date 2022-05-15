@@ -1,12 +1,13 @@
 import './App.css';
 import React, { Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import TaskDetail from './pages/task-detail.page';
+import Settings from './pages/settings.page';
 
 const Register = React.lazy(() => import('./pages/register.page'));
 const NotFoundPage = React.lazy(() => import('./pages/not-found.page'));
 const Dashboard = React.lazy(() => import('./pages/dashboard.page'));
 const TaskBoard = React.lazy(() => import('./components/task-board.component'));
-
 
 function App() {
   return (
@@ -17,7 +18,10 @@ function App() {
         <Route path="signup" element={<Register action="sign-up" />} />
         <Route path="forgot" element={<Register action="forgot" />} />
         <Route path="dashboard" element={<Dashboard />}>
-          <Route path=":collectionId" element={<TaskBoard />} />
+          <Route path="settings" element={<Settings />} />
+          <Route path=":collectionId" element={<TaskBoard />}>
+            <Route path=":taskId" element={<TaskDetail />} />
+          </Route>
         </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

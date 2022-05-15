@@ -56,7 +56,7 @@ export default function Collection({ lists, addList, deleteList, changeDataList 
                     <Link to='streaks' className={`${collection_list_style} ${showSidebar ? 'w-full' : null} ${collectionId === 'streaks' ? selected : null}`}>
                         <div className="flex space-x-3">
                             <TrendingUpIcon className='icon' />
-                            {showSidebar ? <p>Streaks</p> : null}
+                            {showSidebar ? <p>Upcoming</p> : null}
                         </div>
                     </Link>
                 </li>

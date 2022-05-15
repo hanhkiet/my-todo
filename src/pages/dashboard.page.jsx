@@ -9,14 +9,7 @@ import Modal from '../components/modal.component';
 export default function Dashboard() {
 
     const { user } = useRequireAuth();
-    const { collectionId } = useParams();
     const navigate = useNavigate();
-
-    useEffect(() => {
-        if (!collectionId) {
-            navigate('today');
-        }
-    }, [collectionId, navigate]);
 
     if (!user) {
         return <p>Loading...</p>;
@@ -30,7 +23,6 @@ export default function Dashboard() {
                 <div className='grow space-y-2 z-1 overflow-y-auto'>
                     <FunctionBar />
                     <Outlet />
-                    <Modal />
                 </div>
             </div >
         </ProvideSidebar>

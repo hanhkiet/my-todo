@@ -1,10 +1,10 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef } from 'react';
 import useToggle from '../hooks/useToggle';
 import { UserCircleIcon } from '@heroicons/react/solid';
 import { LogoutIcon, CogIcon } from '@heroicons/react/outline';
 import { useOnClickOutside } from '../hooks/useOnClickOutside';
 import useRequireAuth from '../hooks/useRequireAuth';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useSidebar } from '../context/SidebarContext';
 import Property from './property.component';
 import { substring } from '../utils/substring';
@@ -18,6 +18,7 @@ export default function UserBar() {
     const optionsRef = useRef(null);
 
     const { showSidebar } = useSidebar();
+    const navigate = useNavigate();
 
     useOnClickOutside(optionsRef, open ? toggle : null);
 
@@ -25,6 +26,10 @@ export default function UserBar() {
 
     const handleSignout = useCallback(() => signout()
         .then(() => <Navigate to='/signin' />), [signout]);
+
+    const handleOpenSettings = () => {
+        navigate('/dashboard/settings');
+    }
 
     return (
         <div ref={optionsRef} className='w-full h-18 relative flex justify-center'>
@@ -41,7 +46,7 @@ export default function UserBar() {
             {
                 open
                     ? <Property>
-                        <button className='w-40 h-9 p-2 flex items-center space-x-3 hover:bg-slate-300'>
+                        <button onClick={handleOpenSettings} className='w-40 h-9 p-2 flex items-center space-x-3 hover:bg-slate-300'>
                             <CogIcon className='icon' />
                             <p>Settings</p>
                         </button>
