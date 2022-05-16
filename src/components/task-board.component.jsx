@@ -1,4 +1,4 @@
-import { collection } from "firebase/firestore";
+import { collection, doc, setDoc } from "firebase/firestore";
 import { useCallback, useState } from "react";
 import { Outlet, useNavigate, useParams } from "react-router-dom";
 import { firestore } from "../firebase";
@@ -6,7 +6,6 @@ import useRequireAuth from "../hooks/useRequireAuth";
 import { useDocument } from 'react-firebase-hooks/firestore';
 import Task from "./task.component";
 import { PlusCircleIcon } from "@heroicons/react/outline";
-import TaskDetail from "../pages/task-detail.page";
 
 export default function TaskBoard() {
 
@@ -22,6 +21,10 @@ export default function TaskBoard() {
         collection(firestore, 'datas', user.uid, 'todo-lists', collectionId, 'tasks')
         , [collectionId, user.uid]);
 
+    const setTaskData = useCallback((id, data) => {
+        setDoc(doc(firestore, 'datas', user.uid, 'todo-lists', collectionId, 'tasks', id), data, { merge: true });
+    })
+
     const [data, loading, error] = useDocument(getTasks());
 
     if (loading) {
@@ -31,8 +34,8 @@ export default function TaskBoard() {
     }
 
     const lists = data.docs.map((doc) => {
-        return <li key={doc.id} onClick={() => navigate(doc.id)}>
-            <Task {...doc.data()} />
+        return <li key={doc.id} >
+            <Task {...doc.data()} id={doc.id} setTaskData={setTaskData} />
         </li>
     });
 
