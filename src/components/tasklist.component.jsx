@@ -19,7 +19,7 @@ export default function TaskList({ id, name, showSidebar, deleteList, changeData
         deleteList(id);
     }
 
-    const handleSetInputing = () => {
+    const handleSetInputing = (event) => {
         setInputing(true);
         toggle();
         fieldRef.current.value = name;
@@ -43,7 +43,7 @@ export default function TaskList({ id, name, showSidebar, deleteList, changeData
             <div className="flex space-x-3">
                 <CollectionIcon className='h-6 w-6 text-blue-500' />
                 {showSidebar ? (
-                    inputing ? <input ref={fieldRef} autoFocus size={10}
+                    inputing ? <input ref={fieldRef} defaultValue={name} autoFocus size={10}
                         className="bg-inherit outline-none" />
                         : <p>{name}</p>)
                     : null}

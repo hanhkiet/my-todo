@@ -55,7 +55,7 @@ function TaskDisplay({ title, description, setTaskData }) {
         let title = titleRef ? titleRef.current.value : null;
         let description = descriptionRef ? descriptionRef.current.value : null;
 
-        if (!title || title.length === 0) {
+        if (!title || title.trim().length === 0) {
             title = 'Untitled';
         }
 
@@ -108,7 +108,7 @@ export default function TaskDetail() {
     const [data, loading, error] = useDocument(getTask());
 
     if (loading) {
-        return <p>Loading...</p>;
+        return null;
     }
 
     const { title, description } = data.data();

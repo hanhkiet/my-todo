@@ -4,6 +4,8 @@ import { Link, useParams } from "react-router-dom";
 import { useSidebar } from "../context/SidebarContext";
 import { useOnClickOutside } from "../hooks/useOnClickOutside";
 import TaskList from "./tasklist.component";
+import { Timestamp } from "firebase/firestore";
+import sortByDate from "../utils/sortByDate";
 
 const collection_list_style = 'transition-colors duration-100 hover:bg-blue-100 hover:drop-shadow-sm' +
     'focus:bg-blue-100 focus:drop-shadow-sm py-2 px-3 rounded-md outline-none flex items-center justify-between space-x-3';
@@ -24,7 +26,10 @@ export default function Collection({ lists, addList, deleteList, changeDataList 
         if (fieldRef.current.value.trim().length === 0) {
             console.log('fail');
         } else {
-            addList({ name: fieldRef.current.value.trim() });
+            addList({
+                name: fieldRef.current.value.trim(),
+                created: Timestamp.now()
+            });
         }
 
         setInputing(false);
