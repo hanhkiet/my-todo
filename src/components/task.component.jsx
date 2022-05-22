@@ -1,10 +1,61 @@
-import { CalendarIcon, CheckIcon, PencilIcon, TrashIcon, XIcon } from '@heroicons/react/outline';
+import { CalendarIcon, CheckIcon, HeartIcon as HeartOutline, PencilIcon, TrashIcon, XIcon } from '@heroicons/react/outline';
+import { HeartIcon as HeartSolid } from '@heroicons/react/solid';
 import { MenuAlt2Icon } from '@heroicons/react/outline';
 import { useRef, useState } from 'react';
+import { Calendar } from 'react-calendar';
 import { useNavigate } from 'react-router-dom';
 import { useOnClickOutside } from '../hooks/useOnClickOutside';
+import '../styles/calendar.css';
+import formatDate from '../utils/formatDate';
 
-export default function Task({ id, title, description, setTaskData, deleteTask }) {
+function CalendarOption({ date, setDate }) {
+    const [isShow, setIsShow] = useState(false);
+    const [value, setValue] = useState(new Date(date));
+    const calendarRef = useRef(null);
+
+    console.log(date);
+
+    const handleClick = (event) => {
+        event.stopPropagation();
+        setIsShow((isShow) => !isShow);
+    }
+
+    const handleChangeData = (event) => {
+        event.stopPropagation();
+        setDate(value);
+        setIsShow(false);
+    }
+
+    useOnClickOutside(calendarRef, handleChangeData);
+
+    return (
+        <div ref={calendarRef}>
+            <button onClick={handleClick} className='relative group outline-none flex items-center border-2 border-red-400 hover:border-red-500 rounded-md px-1 py-0.5 space-x-0.5'>
+                <CalendarIcon className='h-4 w-4 text-red-400 group-hover:text-red-500 cursor-pointer' />
+                <span className='text-xs text-gray-500'>{formatDate(value)}</span>
+            </button>
+            {isShow &&
+                <div onClick={(event) => event.stopPropagation()}>
+                    <Calendar onChange={setValue} value={value} />
+                </div>
+            }
+        </div>
+    );
+}
+
+function SubtaskOption() {
+    const handleClick = (event) => {
+        event.stopPropagation();
+    }
+
+    return (
+        <button onClick={handleClick}>
+            <MenuAlt2Icon className='h-4 w-4 text-blue-400 hover:text-blue-600 cursor-pointer' />
+        </button>
+    );
+}
+
+export default function Task({ id, title, description, date, favorite, setTaskData, deleteTask }) {
 
     const [inputing, setInputing] = useState(false);
 
@@ -26,6 +77,15 @@ export default function Task({ id, title, description, setTaskData, deleteTask }
 
         setTaskData(id, { title, description });
         setInputing(false);
+    }
+
+    const handleFavorites = (event) => {
+        event.stopPropagation();
+        setTaskData(id, { favorite: !favorite });
+    }
+
+    const setDate = (date) => {
+        setTaskData(id, { date });
     }
 
     const handleOpenEditMode = (event) => {
@@ -73,6 +133,13 @@ export default function Task({ id, title, description, setTaskData, deleteTask }
     return (
         <div onClick={() => navigate(id)} className="group relative border-2 px-4 py-2 rounded-md space-y-2 hover:border-slate-400 cursor-pointer">
             <div className="absolute top-3 right-3 flex space-x-2">
+                <button onClick={handleFavorites} className='outline-none'>
+                    {
+                        favorite
+                            ? <HeartSolid className="text-pink-500 hover:text-pink-700 h-4 w-4 transition-colors duration-75" />
+                            : <HeartOutline className="text-pink-500 hover:text-pink-600 h-4 w-4 transition-colors duration-75" />
+                    }
+                </button>
                 <button onClick={handleOpenEditMode} className="outline-none">
                     <PencilIcon className='text-gray-500 hover:text-gray-700 h-4 w-4 transition-colors duration-75' />
                 </button>
@@ -85,8 +152,8 @@ export default function Task({ id, title, description, setTaskData, deleteTask }
                 <p className="leading-6">{description}</p>
             </div >
             <div className='flex space-x-2'>
-                <MenuAlt2Icon className='h-4 w-4 text-blue-400 hover:text-blue-600 cursor-pointer' />
-                <CalendarIcon className='h-4 w-4 text-red-400 hover:text-red-600 cursor-pointer' />
+                <SubtaskOption />
+                <CalendarOption date={date} setDate={setDate} />
             </div>
         </div >
     );

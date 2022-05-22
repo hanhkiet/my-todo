@@ -19,7 +19,7 @@ export default function TaskList({ id, name, showSidebar, deleteList, changeData
         deleteList(id);
     }
 
-    const handleSetInputing = (event) => {
+    const handleSetInputing = () => {
         setInputing(true);
         toggle();
         fieldRef.current.value = name;
@@ -40,18 +40,23 @@ export default function TaskList({ id, name, showSidebar, deleteList, changeData
 
     return (
         <div ref={propertyRef} onClick={() => navigate(id)} {...others}>
-            <div className="flex space-x-3">
+            <div className="flex space-x-3 relative">
                 <CollectionIcon className='h-6 w-6 text-blue-500' />
+                {!showSidebar
+                    && <p className="absolute z-100 left-12 opacity-0 group-hover:opacity-100 transition-opacity duration-75">
+                        {name}</p>
+                }
                 {showSidebar ? (
                     inputing ? <input ref={fieldRef} defaultValue={name} autoFocus size={10}
                         className="bg-inherit outline-none" />
                         : <p>{name}</p>)
-                    : null}
+                    : null
+                }
             </div>
             {showSidebar
-                ? <DotsHorizontalIcon onClick={toggle} className='h-6 w-6 text-blue-500 opacity-0 
-                hover:opacity-100 transition-opacity duration-100' />
-                : null
+                &&
+                <DotsHorizontalIcon onClick={toggle} className='h-6 w-6 text-blue-500 opacity-0
+                    hover:opacity-100 transition-opacity duration-100' />
             }
 
             {open

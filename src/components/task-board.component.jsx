@@ -7,9 +7,43 @@ import { useDocument } from 'react-firebase-hooks/firestore';
 import Task from "./task.component";
 import { CalendarIcon, CheckIcon, MenuAlt2Icon, PlusCircleIcon, XIcon } from "@heroicons/react/outline";
 import { useOnClickOutside } from "../hooks/useOnClickOutside";
+import { Calendar } from "react-calendar";
+import formatDate from "../utils/formatDate";
+
+function CalendarOption({ date, setDate }) {
+    const [isShow, setIsShow] = useState(false);
+
+    const calendarRef = useRef(null);
+
+    const handleClick = (event) => {
+        event.stopPropagation();
+        setIsShow((isShow) => !isShow);
+    }
+
+    const handleClickOutside = () => {
+        setIsShow(false);
+    }
+
+    useOnClickOutside(calendarRef, handleClickOutside);
+
+    return (
+        <div ref={calendarRef}>
+            <button onClick={handleClick} className='relative group outline-none flex items-center border-2 border-red-400 hover:border-red-500 rounded-md px-1 py-0.5 space-x-0.5'>
+                <CalendarIcon className='h-4 w-4 text-red-400 group-hover:text-red-500 cursor-pointer' />
+                <span className='text-xs text-gray-500'>{formatDate(date)}</span>
+            </button>
+            {isShow &&
+                <div onClick={(event) => event.stopPropagation()}>
+                    <Calendar onChange={setDate} value={date} />
+                </div>
+            }
+        </div>
+    );
+}
 
 function AddTaskFragment({ addTask }) {
     const [inputing, setInputing] = useState(false);
+    const [date, setDate] = useState(new Date());
 
     const titleRef = useRef(null);
     const descriptionRef = useRef(null);
@@ -26,6 +60,7 @@ function AddTaskFragment({ addTask }) {
         addTask({
             title,
             description,
+            date,
             created: Timestamp.now()
         });
         setInputing(false);
@@ -38,10 +73,10 @@ function AddTaskFragment({ addTask }) {
             <div ref={taskRef} className="group relative border-2 px-4 py-2 rounded-md space-y-2 hover:border-slate-400">
                 <div className="absolute top-3 right-3 flex space-x-2">
                     <button onClick={handleAddTask} className="outline-none">
-                        <CheckIcon className="text-gray-500 hover:text-gray-700 h-4 w-4 transition-colors duration-75" />
+                        <CheckIcon className="text-green-500 hover:text-green-700 h-4 w-4 transition-colors duration-75" />
                     </button>
                     <button onClick={() => setInputing(false)} className="outline-none">
-                        <XIcon className="text-gray-500 hover:text-gray-700 h-4 w-4 transition-colors duration-75" />
+                        <XIcon className="text-red-500 hover:text-red-700 h-4 w-4 transition-colors duration-75" />
                     </button>
                 </div>
                 <div className="space-y-1">
@@ -50,9 +85,9 @@ function AddTaskFragment({ addTask }) {
                     <textarea ref={descriptionRef} rows="1" className="min-h-fit w-full outline-none resize-none text-gray-500"
                         placeholder="description"></textarea>
                 </div>
-                <div className='flex space-x-2'>
+                <div className='flex space-x-2 items-center'>
                     <MenuAlt2Icon className='h-4 w-4 text-blue-400 hover:text-blue-600 cursor-pointer' />
-                    <CalendarIcon className='h-4 w-4 text-red-400 hover:text-red-600 cursor-pointer' />
+                    <CalendarOption date={date} setDate={setDate} />
                 </div>
             </div>
         );
@@ -105,9 +140,9 @@ export default function TaskBoard() {
     });
 
     const lists = rawLists.map((doc) => {
-        console.log(doc.created.seconds);
+        const date = (new Timestamp(doc.date.seconds, doc.date.nanoseconds)).toDate();
         return <li key={doc.id} >
-            <Task {...doc} id={doc.id} setTaskData={setTaskData} deleteTask={deleteTask} />
+            <Task {...doc} date={date} id={doc.id} setTaskData={setTaskData} deleteTask={deleteTask} />
         </li>
     });
 

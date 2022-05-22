@@ -5,37 +5,66 @@ import { useSidebar } from "../context/SidebarContext";
 import { useOnClickOutside } from "../hooks/useOnClickOutside";
 import TaskList from "./tasklist.component";
 import { Timestamp } from "firebase/firestore";
-import sortByDate from "../utils/sortByDate";
 
 const collection_list_style = 'transition-colors duration-100 hover:bg-blue-100 hover:drop-shadow-sm' +
     'focus:bg-blue-100 focus:drop-shadow-sm py-2 px-3 rounded-md outline-none flex items-center justify-between space-x-3';
 
 const selected = 'bg-blue-100';
 
-export default function Collection({ lists, addList, deleteList, changeDataList }) {
-
+function ListNameInput({ addList }) {
+    const { showSidebar, toggleSidebar } = useSidebar();
     const [inputing, setInputing] = useState(false);
-
-    const { showSidebar } = useSidebar();
 
     const fieldRef = useRef(null);
 
+    const handleClickOutside = () => {
+        const name = fieldRef ? fieldRef.current.value.trim() : null;
+        if (name) {
+            addList(name);
+        }
+        setInputing(false);
+    }
+
+    const handleClick = () => {
+        setInputing(true);
+
+        if (!showSidebar) {
+            toggleSidebar();
+        }
+    }
+
+    useOnClickOutside(fieldRef, handleClickOutside);
+
+    return (
+        <button onClick={handleClick}
+            className={`${collection_list_style} ${showSidebar ? 'w-full' : null} 
+                                            ${inputing ? 'bg-blue-100' : null}`}>
+            <div className="flex space-x-3">
+                <PlusIcon className="icon" />
+                {
+                    showSidebar ? (
+                        inputing ? <input ref={fieldRef} autoFocus size={14}
+                            className="bg-inherit outline-none" />
+                            : <p>New</p>)
+                        : null
+                }
+            </div>
+        </button>
+    );
+}
+
+export default function Collection({ lists, addList, deleteList, changeDataList }) {
+
+    const { showSidebar } = useSidebar();
+
     const { collectionId } = useParams();
 
-    const handleToggle = useCallback(() => {
-        if (fieldRef.current.value.trim().length === 0) {
-            console.log('fail');
-        } else {
-            addList({
-                name: fieldRef.current.value.trim(),
-                created: Timestamp.now()
-            });
-        }
-
-        setInputing(false);
-    }, [fieldRef]);
-
-    useOnClickOutside(fieldRef, handleToggle);
+    const handleAddList = useCallback((name) => {
+        addList({
+            name,
+            created: Timestamp.now()
+        });
+    }, [addList]);
 
     return (
         <>
@@ -73,24 +102,12 @@ export default function Collection({ lists, addList, deleteList, changeDataList 
                         <li key={list.id}>
                             <TaskList deleteList={deleteList} changeDataList={changeDataList} id={list.id}
                                 name={list.name} showSidebar={showSidebar}
-                                className={`${collection_list_style} relative cursor-pointer ${showSidebar ? 'w-full' : null} ${collectionId === list.id ? selected : null}`} />
+                                className={`${collection_list_style} relative group cursor-pointer ${showSidebar ? 'w-full' : null} ${collectionId === list.id ? selected : null}`} />
                         </li>
                     ))
                 }
                 <li key='create'>
-                    <button onClick={() => setInputing(true)} className={`${collection_list_style} ${showSidebar ? 'w-full' : null} 
-                                            ${inputing ? 'bg-blue-100' : null}`}>
-                        <div className="flex space-x-3">
-                            <PlusIcon className="icon" />
-                            {
-                                showSidebar ? (
-                                    inputing ? <input ref={fieldRef} autoFocus size={14}
-                                        className="bg-inherit outline-none" />
-                                        : <p>New</p>)
-                                    : null
-                            }
-                        </div>
-                    </button>
+                    <ListNameInput showSidebar={showSidebar} addList={handleAddList} />
                 </li>
             </ul>
         </>

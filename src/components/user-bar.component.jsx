@@ -37,8 +37,8 @@ export default function UserBar() {
                 <UserCircleIcon className='h-12 w-12 text-blue-500' />
                 {showSidebar ?
                     <div className='text-left'>
-                        <h2 className='text-lg font-semibold'>{user.displayName ? substring(user.displayName, 20) : "Anonymous"}</h2>
-                        <p className='text-xs'>{substring(user.email, 25)}</p>
+                        <h2 className='text-lg font-semibold'>{user.displayName ? substring(user.displayName, 17) : "Anonymous"}</h2>
+                        <p className='text-xs'>{substring(user.email, 22)}</p>
                     </div>
                     : null
                 }

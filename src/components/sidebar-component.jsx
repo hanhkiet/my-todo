@@ -68,13 +68,15 @@ export default function SideBar() {
             id: doc.id,
             ...doc.data()
         };
+    }).sort((a, b) => {
+        return a.created.seconds - b.created.seconds;
     });
 
     return (
         <div className={sidebar_style}>
             <UserBar showDetail={showSidebar} />
             {loading
-                ? <i className="fa-solid fa-check-double text-xl text-blue-600"></i>
+                ? <i className="fa-solid drop-shadow-lg fa-check-double text-xl text-blue-600"></i>
                 : <Collection lists={lists} addList={handleAddList}
                     deleteList={handleDeleteList} changeDataList={handleChangeDataList} />
             }
