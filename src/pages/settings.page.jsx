@@ -119,7 +119,7 @@ export default function Settings() {
         return <p>Loading...</p>;
     }
 
-    const displayName = data.data().displayName ? data.data().displayName : "Anonymous";
+    const displayName = data.data() ? data.data().displayName : "Anonymous";
 
     return (
         <Transition appear show={isOpen} as={Fragment}>

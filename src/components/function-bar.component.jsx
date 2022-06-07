@@ -15,7 +15,7 @@ export default function FunctionBar() {
             <div className='relative'>
                 <SearchIcon className='icon absolute left-1.5 top-1.5 bottom-1.5' />
                 <input className='pl-9 py-1.5 outline-none rounded-md border-2 transition-colors duration-150 
-                    focus:border-blue-400' type="text" placeholder='search anything...' />
+                    focus:border-blue-400' type="text" placeholder='search task...' />
             </div>
         </div>
     );

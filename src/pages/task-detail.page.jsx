@@ -162,7 +162,7 @@ function SubTaskDisplay({ id, title, description, setSubTaskData }) {
     </div>;
 }
 
-function TaskDisplay({ title, description, setTaskData }) {
+function TaskDisplay({ title, description, collectionId, uid, taskId, setTaskData }) {
     const [inputing, setInputing] = useState(false);
 
     const titleRef = useRef(null);
@@ -176,7 +176,12 @@ function TaskDisplay({ title, description, setTaskData }) {
             title = 'Untitled';
         }
 
-        setTaskData({ title, description });
+        setTaskData({ title, description }).then(() => {
+            if (collectionId) {
+                setDoc(doc(firestore, 'datas', uid, 'todo-lists', collectionId, 'tasks', taskId),
+                    { title, description }, { merge: true });
+            }
+        });
         setInputing(false);
     }
 
@@ -221,22 +226,32 @@ export default function TaskDetail() {
     const { user } = useRequireAuth();
     const { collectionId, taskId } = useParams();
 
+    const isNormalTaskBoard = collectionId === 'today' || collectionId === 'upcoming' || collectionId === 'archived';
+
     const navigate = useNavigate();
 
-    const getTask = useCallback(() =>
-        doc(firestore, 'datas', user.uid, 'todo-lists', collectionId, 'tasks', taskId)
-        , [collectionId, taskId, user.uid]);
+    const getTask = useCallback(() => {
+        if (isNormalTaskBoard) {
+            return doc(firestore, 'uncategoried', user.uid, 'todo-lists', taskId)
+        } else {
+            return doc(firestore, 'datas', user.uid, 'todo-lists', collectionId, 'tasks', taskId)
+        }
+    }, [collectionId, isNormalTaskBoard, taskId, user.uid]);
 
-    const setTaskData = useCallback((data) =>
-        setDoc(doc(firestore, 'datas', user.uid, 'todo-lists', collectionId, 'tasks', taskId), data, { merge: true })
-        , [collectionId, taskId, user.uid]);
+    const setTaskData = useCallback((data) => {
+        if (isNormalTaskBoard) {
+            return setDoc(doc(firestore, 'uncategoried', user.uid, 'todo-lists', taskId), data, { merge: true })
+        } else {
+            return setDoc(doc(firestore, 'datas', user.uid, 'todo-lists', collectionId, 'tasks', taskId)
+                , data, { merge: true })
+        }
+    }, [collectionId, isNormalTaskBoard, taskId, user.uid]);
 
     const [data, loading, error] = useDocument(getTask());
 
     if (loading) {
         return null;
     }
-
 
     const { title, description } = data.data();
 
@@ -273,7 +288,8 @@ export default function TaskDetail() {
                         >
                             <Dialog.Panel className='w-full max-w-lg transform overflow-hidden rounded-lg 
                             bg-white p-6 text-left align-middle shadow-xl transition-all space-y-4'>
-                                <TaskDisplay title={title} description={description} setTaskData={setTaskData} />
+                                <TaskDisplay title={title} collectionId={data.data().collectionId}
+                                    uid={user.uid} taskId={taskId} description={description} setTaskData={setTaskData} />
                                 <SubTask />
                             </Dialog.Panel>
                         </Transition.Child>

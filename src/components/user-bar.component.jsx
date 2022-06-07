@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import useToggle from '../hooks/useToggle';
 import { UserCircleIcon } from '@heroicons/react/solid';
 import { LogoutIcon, CogIcon } from '@heroicons/react/outline';
@@ -8,7 +8,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { useSidebar } from '../context/SidebarContext';
 import Property from './property.component';
 import { substring } from '../utils/substring';
-import { doc } from 'firebase/firestore';
+import { addDoc, collection, doc, setDoc } from 'firebase/firestore';
 import { firestore } from '../firebase';
 import { useDocument } from 'react-firebase-hooks/firestore';
 
@@ -29,7 +29,6 @@ export default function UserBar() {
 
     const [data, loading, error] = useDocument(getData());
 
-
     useOnClickOutside(optionsRef, open ? toggle : null);
 
     const handleSignout = useCallback(() => signout()
@@ -43,7 +42,7 @@ export default function UserBar() {
         navigate('/dashboard/settings');
     }
 
-    const displayName = data.data().displayName ? data.data().displayName : user.displayName;
+    const displayName = data.data() ? data.data().displayName : "Anonymous";
 
     return (
         <div ref={optionsRef} className='w-full h-18 relative flex justify-center'>

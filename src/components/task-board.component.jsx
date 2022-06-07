@@ -10,6 +10,23 @@ import { useOnClickOutside } from "../hooks/useOnClickOutside";
 import { Calendar } from "react-calendar";
 import formatDate from "../utils/formatDate";
 
+function getList(data) {
+    return data.docs.map((doc) => {
+        return {
+            id: doc.id,
+            ...doc.data()
+        }
+    }).sort((a, b) => {
+        const completedA = a.status === 'completed' ? 1 : 0;
+        const completedB = b.status === 'completed' ? 1 : 0;
+        if (completedA === completedB) {
+            return a.created.seconds - b.created.seconds;
+        } else {
+            return completedA - completedB;
+        }
+    });
+}
+
 function CalendarOption({ date, setDate }) {
     const [isShow, setIsShow] = useState(false);
 
@@ -101,26 +118,22 @@ function AddTaskFragment({ addTask }) {
     </button>;
 }
 
-export default function TaskBoard() {
-
-    const { user } = useRequireAuth();
-    const { collectionId } = useParams();
-
+function TodayTaskBoard({ uid }) {
     const getTasks = useCallback(() =>
-        collection(firestore, 'datas', user.uid, 'todo-lists', collectionId, 'tasks')
-        , [collectionId, user.uid]);
+        collection(firestore, 'uncategoried', uid, 'todo-lists')
+        , [uid]);
 
     const addTask = useCallback((data) =>
-        addDoc(collection(firestore, 'datas', user.uid, 'todo-lists', collectionId, 'tasks'), data)
-        , [collectionId, user.uid]);
+        addDoc(collection(firestore, 'uncategoried', uid, 'todo-lists'), data)
+        , [uid]);
 
     const setTaskData = useCallback((id, data) => {
-        setDoc(doc(firestore, 'datas', user.uid, 'todo-lists', collectionId, 'tasks', id), data, { merge: true });
-    }, [collectionId, user.uid]);
+        setDoc(doc(firestore, 'uncategoried', uid, 'todo-lists', id), data, { merge: true });
+    }, [uid]);
 
     const deleteTask = useCallback((id) =>
-        deleteDoc(doc(firestore, 'datas', user.uid, 'todo-lists', collectionId, 'tasks', id))
-        , [collectionId, user.uid]);
+        deleteDoc(doc(firestore, 'uncategoried', uid, 'todo-lists', id))
+        , [uid]);
 
     const [data, loading, error] = useDocument(getTasks());
 
@@ -130,29 +143,217 @@ export default function TaskBoard() {
         </div>;
     }
 
-    const rawLists = data.docs.map((doc) => {
-        return {
-            id: doc.id,
-            ...doc.data()
+    const rawList = getList(data);
+
+    const list = rawList.map((doc) => {
+        const date = (new Timestamp(doc.date.seconds, doc.date.nanoseconds)).toDate();
+        const now = new Date(Date.now());
+        const isYearEqual = date.getFullYear() === now.getFullYear();
+        const isMonthEqual = date.getMonth() === now.getMonth();
+        const isDateEqual = date.getDate() === now.getDate();
+
+        if (isYearEqual && isMonthEqual && isDateEqual) {
+            console.log(doc.collectionId);
+            return <li key={doc.id}>
+                <Task {...doc} date={date} id={doc.id} uid={uid} collectionId={doc.collectionId}
+                    setTaskData={setTaskData} deleteTask={deleteTask} />
+            </li>
         }
-    }).sort((a, b) => {
-        return a.created.seconds - b.created.seconds;
     });
 
-    const lists = rawLists.map((doc) => {
+    return (
+        <div className='w-full h-fit px-32 lg:px-48 xl:px-60 py-6 z-1 space-y-2'>
+            <ul className="space-y-4">
+                {list}
+            </ul>
+            <AddTaskFragment addTask={addTask} />
+            <Outlet />
+        </div>
+    );
+}
+
+function UpcomingTaskBoard({ uid }) {
+    const getTasks = useCallback(() =>
+        collection(firestore, 'uncategoried', uid, 'todo-lists')
+        , [uid]);
+
+    const addTask = useCallback((data) =>
+        addDoc(collection(firestore, 'uncategoried', uid, 'todo-lists'), data)
+        , [uid]);
+
+    const setTaskData = useCallback((id, data) => {
+        setDoc(doc(firestore, 'uncategoried', uid, 'todo-lists', id), data, { merge: true });
+    }, [uid]);
+
+
+    const deleteTask = useCallback((id) =>
+        deleteDoc(doc(firestore, 'uncategoried', uid, 'todo-lists', id))
+        , [uid]);
+
+    const [data, loading, error] = useDocument(getTasks());
+
+    if (loading) {
+        return <div className="w-full h-fit px-32 lg:px48 xl:px-60 py-6 z-1 flex items-center justify-center">
+            <i className="fa-solid fa-check-double text-xl text-blue-600"></i>
+        </div>;
+    }
+
+    const rawList = getList(data);
+
+    const list = rawList.map((doc) => {
         const date = (new Timestamp(doc.date.seconds, doc.date.nanoseconds)).toDate();
+
+        const now = new Date(Date.now());
+        const isGreater = (date.getFullYear() > now.getFullYear) ||
+            (date.getFullYear() === now.getFullYear() && date.getMonth() > now.getMonth()) ||
+            (date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() > now.getDate())
+
+        if (isGreater) {
+            return <li key={doc.id} >
+                <Task {...doc} date={date} id={doc.id} uid={uid} collectionId={doc.collectionId}
+                    setTaskData={setTaskData} deleteTask={deleteTask} />
+            </li>
+        }
+    });
+
+    return (
+        <div className='w-full h-fit px-32 lg:px-48 xl:px-60 py-6 z-1 space-y-2'>
+            <ul className="space-y-4">
+                {list}
+            </ul>
+            <AddTaskFragment addTask={addTask} />
+            <Outlet />
+        </div>
+    );
+}
+
+function ArchivedTaskBoard({ uid }) {
+    const getTasks = useCallback(() =>
+        collection(firestore, 'uncategoried', uid, 'todo-lists')
+        , [uid]);
+
+    const setTaskData = useCallback((id, data) => {
+        setDoc(doc(firestore, 'uncategoried', uid, 'tasks', id), data, { merge: true });
+    }, [uid]);
+
+    const deleteTask = useCallback((id) =>
+        deleteDoc(doc(firestore, 'uncategoried', uid, 'tasks', id))
+        , [uid]);
+
+    const [data, loading, error] = useDocument(getTasks());
+
+    if (loading) {
+        return <div className="w-full h-fit px-32 lg:px48 xl:px-60 py-6 z-1 flex items-center justify-center">
+            <i className="fa-solid fa-check-double text-xl text-blue-600"></i>
+        </div>;
+    }
+
+    const rawList = getList(data);
+    const list = rawList.map((doc) => {
+        const date = (new Timestamp(doc.date.seconds, doc.date.nanoseconds)).toDate();
+        if (doc.status === 'completed') {
+            return <li key={doc.id} >
+                <Task {...doc} date={date} id={doc.id} uid={uid} collectionId={doc.collectionId}
+                    setTaskData={setTaskData} deleteTask={deleteTask} />
+            </li>
+        }
+    });
+
+    return (
+        <div className='w-full h-fit px-32 lg:px-48 xl:px-60 py-6 z-1 space-y-2'>
+            <ul className="space-y-4">
+                {list}
+            </ul>
+            <Outlet />
+        </div>
+    );
+}
+
+function NormalTaskBoard({ uid, collectionId }) {
+    const getTasks = useCallback(() =>
+        collection(firestore, 'datas', uid, 'todo-lists', collectionId, 'tasks')
+        , [collectionId, uid]);
+
+    const addTask = useCallback((data) =>
+        addDoc(collection(firestore, 'datas', uid, 'todo-lists', collectionId, 'tasks'), data)
+        , [collectionId, uid]);
+
+    const setDataInUnCategoried = useCallback((id, data) => {
+        setDoc(doc(firestore, 'uncategoried', uid, 'todo-lists', id), data, { merge: true })
+    }, [uid]);
+
+    const deleteTaskInUncategoried = useCallback((id) => {
+        deleteDoc(doc(firestore, 'uncategoried', uid, 'todo-lists', id))
+    }, [uid]);
+
+    const setTaskData = useCallback((id, data) => {
+        setDoc(doc(firestore, 'datas', uid, 'todo-lists', collectionId, 'tasks', id), data, { merge: true })
+            .then(() => setDataInUnCategoried(id, data));
+    }, [collectionId, setDataInUnCategoried, uid]);
+
+    const deleteTask = useCallback((id) =>
+        deleteDoc(doc(firestore, 'datas', uid, 'todo-lists', collectionId, 'tasks', id))
+            .then(() => deleteTaskInUncategoried(id))
+        , [collectionId, deleteTaskInUncategoried, uid]);
+
+    const addToUncategoried = useCallback((id, data) => {
+        setDoc(doc(firestore, 'uncategoried', uid, 'todo-lists', id), data, { merge: true })
+    }, [uid]);
+
+
+    const [data, loading, error] = useDocument(getTasks());
+
+    if (loading) {
+        return <div className="w-full h-fit px-32 lg:px48 xl:px-60 py-6 z-1 flex items-center justify-center">
+            <i className="fa-solid fa-check-double text-xl text-blue-600"></i>
+        </div>;
+    }
+
+    const rawList = getList(data);
+
+    const list = rawList.map((doc) => {
+        const date = (new Timestamp(doc.date.seconds, doc.date.nanoseconds)).toDate();
+
+        addToUncategoried(doc.id, {
+            ...doc,
+            collectionId,
+            date
+        });
+
         return <li key={doc.id} >
-            <Task {...doc} date={date} id={doc.id} setTaskData={setTaskData} deleteTask={deleteTask} />
+            <Task {...doc} date={date} collectionId={collectionId}
+                id={doc.id} setTaskData={setTaskData}
+                deleteTask={deleteTask} />
         </li>
     });
 
     return (
         <div className='w-full h-fit px-32 lg:px-48 xl:px-60 py-6 z-1 space-y-2'>
             <ul className="space-y-4">
-                {lists}
+                {list}
             </ul>
             <AddTaskFragment addTask={addTask} />
             <Outlet />
         </div>
     );
+}
+
+export default function TaskBoard() {
+
+    const { user } = useRequireAuth();
+    const { collectionId } = useParams();
+
+    if (collectionId === 'today') {
+        return <TodayTaskBoard uid={user.uid} />;
+    }
+
+    if (collectionId === 'archived') {
+        return <ArchivedTaskBoard uid={user.uid} />;
+    }
+
+    if (collectionId === 'upcoming') {
+        return <UpcomingTaskBoard uid={user.uid} />;
+    }
+
+    return <NormalTaskBoard uid={user.uid} collectionId={collectionId} />;
 }
