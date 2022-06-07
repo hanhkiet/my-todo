@@ -1,5 +1,4 @@
-import { CalendarIcon, CheckIcon, HeartIcon as HeartOutline, PencilIcon, TrashIcon, XIcon } from '@heroicons/react/outline';
-import { HeartIcon as HeartSolid } from '@heroicons/react/solid';
+import { CalendarIcon, CheckCircleIcon, CheckIcon, PencilIcon, TrashIcon, XIcon } from '@heroicons/react/outline';
 import { MenuAlt2Icon } from '@heroicons/react/outline';
 import { useRef, useState } from 'react';
 import { Calendar } from 'react-calendar';
@@ -12,8 +11,6 @@ function CalendarOption({ date, setDate }) {
     const [isShow, setIsShow] = useState(false);
     const [value, setValue] = useState(new Date(date));
     const calendarRef = useRef(null);
-
-    console.log(date);
 
     const handleClick = (event) => {
         event.stopPropagation();
@@ -55,9 +52,11 @@ function SubtaskOption() {
     );
 }
 
-export default function Task({ id, title, description, date, favorite, setTaskData, deleteTask }) {
+export default function Task({ id, title, description, status, date, setTaskData, deleteTask }) {
 
     const [inputing, setInputing] = useState(false);
+
+    const isCompleted = status === 'completed';
 
     const titleRef = useRef(null);
     const descriptionRef = useRef(null);
@@ -73,15 +72,13 @@ export default function Task({ id, title, description, date, favorite, setTaskDa
             title = 'Untitled';
         }
 
-        console.log(description);
-
         setTaskData(id, { title, description });
         setInputing(false);
     }
 
-    const handleFavorites = (event) => {
+    const handleMarkCompleted = (event) => {
         event.stopPropagation();
-        setTaskData(id, { favorite: !favorite });
+        setTaskData(id, { status: "completed" });
     }
 
     const setDate = (date) => {
@@ -131,15 +128,9 @@ export default function Task({ id, title, description, date, favorite, setTaskDa
     }
 
     return (
-        <div onClick={() => navigate(id)} className="group relative border-2 px-4 py-2 rounded-md space-y-2 hover:border-slate-400 cursor-pointer">
-            <div className="absolute top-3 right-3 flex space-x-2">
-                <button onClick={handleFavorites} className='outline-none'>
-                    {
-                        favorite
-                            ? <HeartSolid className="text-pink-500 hover:text-pink-700 h-4 w-4 transition-colors duration-75" />
-                            : <HeartOutline className="text-pink-500 hover:text-pink-600 h-4 w-4 transition-colors duration-75" />
-                    }
-                </button>
+        <div onClick={() => navigate(id)} className={`group relative border-2 px-4 py-2 rounded-md space-y-2 
+                        ${isCompleted ? 'border-slate-400' : ''} hover:border-slate-400 cursor-pointer`}>
+            <div className="absolute top-3 right-3 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-75">
                 <button onClick={handleOpenEditMode} className="outline-none">
                     <PencilIcon className='text-gray-500 hover:text-gray-700 h-4 w-4 transition-colors duration-75' />
                 </button>
@@ -147,10 +138,14 @@ export default function Task({ id, title, description, date, favorite, setTaskDa
                     <TrashIcon onClick={handleDeleteTask} className="text-red-500 hover:text-red-700 h-4 w-4 transition-colors duration-75" />
                 </button>
             </div>
+            <button onClick={handleMarkCompleted} className={`outline-none absolute -top-5 -left-3 z-10 bg-white group-hover:opacity-100 
+                        ${isCompleted ? 'opacity-100' : 'opacity-0'} transition-opacity duration-75`}>
+                <CheckCircleIcon className={`h-6 w-6 ${isCompleted ? 'text-blue-400 hover:text-gray-400' : 'text-gray-400 hover:text-blue-400'}  transition-colors duration-75`} />
+            </button>
             <div className="space-y-1">
                 <h2 className="text-3xl leading-9">{title}</h2>
                 <p className="leading-6">{description}</p>
-            </div >
+            </div>
             <div className='flex space-x-2'>
                 <SubtaskOption />
                 <CalendarOption date={date} setDate={setDate} />

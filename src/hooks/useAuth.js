@@ -3,7 +3,7 @@ import React, { useState, useEffect, useContext, createContext } from "react";
 import { auth } from "../firebase";
 import {
     createUserWithEmailAndPassword, GithubAuthProvider, GoogleAuthProvider, onAuthStateChanged,
-    sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup, signOut
+    sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup, signOut, updatePassword
 } from "firebase/auth";
 
 const authContext = createContext();
@@ -69,6 +69,10 @@ function useProvideAuth() {
         }
     }
 
+    const changePassword = (newPassword) => {
+        return updatePassword(newPassword);
+    }
+
     // Subscribe to user on mount
     // Because this sets state in the callback it will cause any ...
     // ... component that utilizes this hook to re-render with the ...
@@ -91,6 +95,7 @@ function useProvideAuth() {
         signinWithThirdParty,
         signup,
         signout,
-        sendPasswordReset
+        sendPasswordReset,
+        changePassword
     };
 }

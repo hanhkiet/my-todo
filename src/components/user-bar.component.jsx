@@ -8,6 +8,9 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { useSidebar } from '../context/SidebarContext';
 import Property from './property.component';
 import { substring } from '../utils/substring';
+import { doc } from 'firebase/firestore';
+import { firestore } from '../firebase';
+import { useDocument } from 'react-firebase-hooks/firestore';
 
 const user_button = 'flex items-center justify-center space-x-1 outline-none' +
     'transition-colors duration-100 focus:bg-blue-100 hover:bg-blue-100 rounded-md p-2';
@@ -20,16 +23,27 @@ export default function UserBar() {
     const { showSidebar } = useSidebar();
     const navigate = useNavigate();
 
-    useOnClickOutside(optionsRef, open ? toggle : null);
-
     const { signout, user } = useRequireAuth();
+
+    const getData = useCallback(() => doc(firestore, 'users', user.uid), [user.uid]);
+
+    const [data, loading, error] = useDocument(getData());
+
+
+    useOnClickOutside(optionsRef, open ? toggle : null);
 
     const handleSignout = useCallback(() => signout()
         .then(() => <Navigate to='/signin' />), [signout]);
 
+    if (loading) {
+        return <p>Loading...</p>;
+    }
+
     const handleOpenSettings = () => {
         navigate('/dashboard/settings');
     }
+
+    const displayName = data.data().displayName ? data.data().displayName : user.displayName;
 
     return (
         <div ref={optionsRef} className='w-full h-18 relative flex justify-center'>
@@ -37,7 +51,7 @@ export default function UserBar() {
                 <UserCircleIcon className='h-12 w-12 text-blue-500' />
                 {showSidebar ?
                     <div className='text-left'>
-                        <h2 className='text-lg font-semibold'>{user.displayName ? substring(user.displayName, 17) : "Anonymous"}</h2>
+                        <h2 className='text-lg font-semibold'>{displayName ? substring(displayName, 17) : "Anonymous"}</h2>
                         <p className='text-xs'>{substring(user.email, 22)}</p>
                     </div>
                     : null

@@ -1,51 +1,168 @@
 import { Transition, Dialog } from "@headlessui/react";
-import { CheckCircleIcon, PlusIcon } from "@heroicons/react/outline";
-import { doc, setDoc } from "firebase/firestore";
+import { CheckCircleIcon, CheckIcon, PencilIcon, PlusIcon, TrashIcon, XIcon } from "@heroicons/react/outline";
+import { addDoc, collection, doc, setDoc, Timestamp } from "firebase/firestore";
 import { useState, Fragment, useCallback, useRef } from "react";
 import { useDocument } from "react-firebase-hooks/firestore";
 import { useNavigate, useParams } from "react-router-dom";
 import { firestore } from "../firebase";
 import useRequireAuth from "../hooks/useRequireAuth";
 
-function SubTask() {
-    return <div className="flex items-center space-x-2">
-        <button className="outline-none">
-            <CheckCircleIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-        </button>
-        <div className="space-y-1">
-            <SubTaskDisplay title="title" description="description" />
-        </div>
-    </div>
-}
-
-function SubTaskDisplay({ title, description }) {
+function AddSubTaskFragment({ addSubTask }) {
     const [inputing, setInputing] = useState(false);
 
-    if (inputing) {
-        return (
-            <div>
-                <input autoFocus type="text" defaultValue={title} placeholder="title" className="w-full text-md outline-none" />
-                <textarea rows="1" className="w-full text-sm min-h-fit outline-none resize-none"
-                    placeholder="description" defaultValue={description}>
-                </textarea>
-                <div className="space-x-3">
-                    <button className="bg-blue-500 hover:bg-blue-400 outline-none px-2 py-1 rounded-md text-white">Save</button>
-                    <button onClick={() => setInputing(false)} className="bg-gray-200 hover:bg-gray-100 outline-none px-2 py-1 rounded-md">Cancel</button>
-                </div>
-            </div >
-        );
+    const titleRef = useRef(null);
+    const descriptionRef = useRef(null);
+
+    const handleAddSubTask = () => {
+        let title = titleRef ? titleRef.current.value : null;
+        let description = descriptionRef ? descriptionRef.current.value : null;
+
+        if (!title || title.trim().length === 0) {
+            title = 'Untitled';
+        }
+
+        addSubTask({
+            title,
+            description,
+            created: Timestamp.now()
+        });
+        setInputing(false);
     }
 
+    if (!inputing) {
+        return (
+            <button onClick={() => setInputing(true)} className="flex items-center space-x-2 outline-none">
+                <PlusIcon className="h-4 w-4" />
+                <span className="text-md text-gray-600">Add task</span>
+            </button>);
+    }
+
+    return <div className="relative border-2 border-blue-200 rounded-md p-2">
+        <div className="absolute right-2 flex space-x-1">
+            <button className="outline-none">
+                <CheckIcon onClick={handleAddSubTask} className="h-3 w-3 text-green-500 hover:text-green-400" />
+            </button>
+            <button onClick={() => setInputing(false)} className="outline-none">
+                <XIcon className="h-3 w-3 text-red-500 hover:text-red-400" />
+            </button>
+        </div>
+        <input ref={titleRef} autoFocus type="text" placeholder="title" className="w-full text-lg outline-none" />
+        <textarea ref={descriptionRef} rows="1" className="w-full text-sm min-h-fit outline-none resize-none"
+            placeholder="description">
+        </textarea>
+    </div>;
+}
+
+function SubTask() {
+    const { user } = useRequireAuth();
+    const { collectionId, taskId } = useParams();
+
+    const getSubTasks = useCallback(() =>
+        collection(firestore, 'datas', user.uid, 'todo-lists', collectionId, 'tasks', taskId, 'sub-tasks')
+        , [collectionId, taskId, user.uid]);
+
+    const addSubTask = useCallback((data) =>
+        addDoc(collection(firestore, 'datas', user.uid, 'todo-lists', collectionId, 'tasks', taskId, 'sub-tasks'), data)
+        , [collectionId, taskId, user.uid]);
+
+    const setSubTaskData = useCallback((id, data) =>
+        setDoc(doc(firestore, 'datas', user.uid, 'todo-lists', collectionId, 'tasks', taskId, 'sub-tasks', id)
+            , data, { merge: true })
+        , [collectionId, taskId, user.uid]);
+
+    const [data, loading, error] = useDocument(getSubTasks());
+
+    if (loading) {
+        return <p >Loading...</p>;
+    }
+
+    const rawLists = data.docs.map((doc) => {
+        return {
+            id: doc.id,
+            ...doc.data()
+        };
+    }).sort((a, b) => {
+        return a.created.seconds - b.created.seconds;
+    });
+
+    const lists = rawLists.map((doc) => {
+        return <li key={doc.id}>
+            <SubTaskDisplay {...doc} setSubTaskData={setSubTaskData} />
+        </li>
+    });
+
     return (
-        <div onClick={() => setInputing(true)}>
-            <h4 className="text-md">{title}</h4>
-            <p className="text-sm">{description}</p>
+        <div className="space-y-2">
+            <h3 className="text-md font-semibold">Subtask</h3>
+            <ul className="space-y-3 overflow-y-scroll">
+                {lists}
+                <AddSubTaskFragment addSubTask={addSubTask} />
+            </ul>
         </div>
     );
 }
 
-function TaskDisplay({ title, description, setTaskData }) {
+function SubTaskDisplay({ id, title, description, setSubTaskData }) {
+    const [inputing, setInputing] = useState(false);
 
+    const titleRef = useRef(null);
+    const descriptionRef = useRef(null);
+
+    const handleChangeData = () => {
+        let title = titleRef ? titleRef.current.value : null;
+        let description = descriptionRef ? descriptionRef.current.value : null;
+
+        if (!title || title.length === 0) {
+            title = 'Untitled';
+        }
+
+        setSubTaskData(id, { title, description, status: "pending" });
+        setInputing(false);
+    }
+
+    const handleMarkCompleted = () => {
+        setSubTaskData(id, { status: "completed" });
+    }
+
+    if (inputing) {
+        return (
+            <div className="relative border-2 border-blue-200 rounded-md p-2">
+                <div className="absolute right-2 flex space-x-1">
+                    <button onClick={handleChangeData} className="outline-none">
+                        <CheckIcon className="h-3 w-3 text-green-500 hover:text-green-400" />
+                    </button>
+                    <button onClick={() => setInputing(false)} className="outline-none">
+                        <XIcon className="h-3 w-3 text-red-500 hover:text-red-400" />
+                    </button>
+                </div>
+                <input ref={titleRef} autoFocus type="text" defaultValue={title} placeholder="title" className="w-full text-md outline-none" />
+                <textarea ref={descriptionRef} rows="1" className="w-full text-sm min-h-fit outline-none resize-none"
+                    placeholder="description" defaultValue={description}>
+                </textarea>
+            </div >
+        );
+    }
+
+    return <div className="relative flex items-center space-x-2">
+        <button onClick={handleMarkCompleted} className="outline-none">
+            <CheckCircleIcon className="h-5 w-5 text-gray-400 hover:text-blue-400" />
+        </button>
+        <div className="group grow">
+            <div className="absolute right-2 top-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-75">
+                <button onClick={() => setInputing(true)} className="outline-none">
+                    <PencilIcon className="h-3 w-3 text-gray-500 hover:text-gray-400" />
+                </button>
+                <button className="outline-none">
+                    <TrashIcon className="h-3 w-3 text-red-500 hover:text-red-400" />
+                </button>
+            </div>
+            <h4 className="text-lg">{title}</h4>
+            <p className="text-sm">{description}</p>
+        </div>
+    </div>;
+}
+
+function TaskDisplay({ title, description, setTaskData }) {
     const [inputing, setInputing] = useState(false);
 
     const titleRef = useRef(null);
@@ -65,21 +182,30 @@ function TaskDisplay({ title, description, setTaskData }) {
 
     if (inputing) {
         return (
-            <div className="space-y-2 border-2 border-blue-200 rounded-md p-2">
+            <div className="relative space-y-2 border-2 border-blue-200 rounded-md p-2">
+                <div className="absolute right-2 flex space-x-1">
+                    <button onClick={handleSetValue}>
+                        <CheckIcon className="w-4 h-4 text-green-500 hover:text-green-400" />
+                    </button>
+                    <button onClick={() => setInputing(false)}>
+                        <XIcon className="w-4 h-4 text-red-500 hover:text-green-400" />
+                    </button>
+                </div>
                 <input ref={titleRef} autoFocus type="text" defaultValue={title} className="w-full outline-none text-2xl font-medium " placeholder="title" />
                 <textarea ref={descriptionRef} rows="2" className="w-full min-h-fit outline-none text-md text-gray-500 resize-none"
                     placeholder="description" defaultValue={description}>
                 </textarea>
-                <div className="space-x-3">
-                    <button onClick={handleSetValue} className="bg-blue-500 hover:bg-blue-400 outline-none px-2 py-1 rounded-md text-white">Save</button>
-                    <button onClick={() => setInputing(false)} className="bg-gray-200 hover:bg-gray-100 outline-none px-2 py-1 rounded-md">Cancel</button>
-                </div>
             </div>
         );
     }
 
     return (
-        <div className="space-y-2" onClick={() => setInputing(true)}>
+        <div className="group relative space-y-2">
+            <div className="absolute right-2 ">
+                <button className="outline-none opacity-0 group-hover:opacity-100 transition-opacity duration-75">
+                    <PencilIcon onClick={() => setInputing(true)} className="h-4 w-4 text-gray-500 hover:text-gray-400" />
+                </button>
+            </div>
             <h2 className='text-2xl font-medium leading-6 text-gray-900'>
                 {title}
             </h2>
@@ -110,6 +236,7 @@ export default function TaskDetail() {
     if (loading) {
         return null;
     }
+
 
     const { title, description } = data.data();
 
@@ -147,19 +274,7 @@ export default function TaskDetail() {
                             <Dialog.Panel className='w-full max-w-lg transform overflow-hidden rounded-lg 
                             bg-white p-6 text-left align-middle shadow-xl transition-all space-y-4'>
                                 <TaskDisplay title={title} description={description} setTaskData={setTaskData} />
-                                <div className="space-y-2">
-                                    <h3 className="text-md font-semibold">Subtask</h3>
-                                    <ul className="space-y-3 overflow-y-scroll">
-                                        <li><SubTask /></li>
-                                        <li><SubTask /></li>
-                                        <li>
-                                            <button className="flex items-center space-x-2 outline-none">
-                                                <PlusIcon className="h-5 w-5" />
-                                                <span className="text-md">Add task</span>
-                                            </button>
-                                        </li>
-                                    </ul>
-                                </div>
+                                <SubTask />
                             </Dialog.Panel>
                         </Transition.Child>
                     </div>

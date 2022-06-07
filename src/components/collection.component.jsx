@@ -1,4 +1,4 @@
-import { HeartIcon, PlusIcon, SunIcon, TrendingUpIcon } from "@heroicons/react/outline";
+import { PlusIcon, RefreshIcon, SunIcon, TrendingUpIcon } from "@heroicons/react/outline";
 import { useCallback, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useSidebar } from "../context/SidebarContext";
@@ -81,8 +81,8 @@ export default function Collection({ lists, addList, deleteList, changeDataList 
                 <li key='favorites'>
                     <Link to='favorites' className={`${collection_list_style} ${showSidebar ? 'w-full' : null} ${collectionId === 'favorites' ? selected : null}`}>
                         <div className="flex space-x-3">
-                            <HeartIcon className='icon' />
-                            {showSidebar ? <p>Favorites</p> : null}
+                            <RefreshIcon className='icon' />
+                            {showSidebar ? <p>Streak</p> : null}
                         </div>
                     </Link>
                 </li>
