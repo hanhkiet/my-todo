@@ -7,16 +7,19 @@ import { useDocument } from 'react-firebase-hooks/firestore';
 import Task from "./task.component";
 import { CalendarIcon, CheckIcon, MenuAlt2Icon, PlusCircleIcon, XIcon } from "@heroicons/react/outline";
 import { useOnClickOutside } from "../hooks/useOnClickOutside";
+import { useSearchContent } from '../context/SearchContentContext';
 import { Calendar } from "react-calendar";
 import formatDate from "../utils/formatDate";
 
-function getList(data) {
-    return data.docs.map((doc) => {
+function getList(data, searchContent) {
+    const list = data.docs.map((doc) => {
         return {
             id: doc.id,
             ...doc.data()
         }
-    }).sort((a, b) => {
+    });
+
+    const sortedList = list.sort((a, b) => {
         const completedA = a.status === 'completed' ? 1 : 0;
         const completedB = b.status === 'completed' ? 1 : 0;
         if (completedA === completedB) {
@@ -25,6 +28,14 @@ function getList(data) {
             return completedA - completedB;
         }
     });
+
+    if (searchContent) {
+        return sortedList.filter(doc => {
+            return doc.title.includes(searchContent) || doc.description.includes(searchContent);
+        });
+    } else {
+        return sortedList;
+    }
 }
 
 function CalendarOption({ date, setDate }) {
@@ -118,11 +129,7 @@ function AddTaskFragment({ addTask }) {
     </button>;
 }
 
-function TodayTaskBoard({ uid }) {
-    const getTasks = useCallback(() =>
-        collection(firestore, 'uncategoried', uid, 'todo-lists')
-        , [uid]);
-
+function TodayTaskBoard({ uid, rawList }) {
     const addTask = useCallback((data) =>
         addDoc(collection(firestore, 'uncategoried', uid, 'todo-lists'), data)
         , [uid]);
@@ -134,16 +141,6 @@ function TodayTaskBoard({ uid }) {
     const deleteTask = useCallback((id) =>
         deleteDoc(doc(firestore, 'uncategoried', uid, 'todo-lists', id))
         , [uid]);
-
-    const [data, loading, error] = useDocument(getTasks());
-
-    if (loading) {
-        return <div className="w-full h-fit px-32 lg:px48 xl:px-60 py-6 z-1 flex items-center justify-center">
-            <i className="fa-solid fa-check-double text-xl text-blue-600"></i>
-        </div>;
-    }
-
-    const rawList = getList(data);
 
     const list = rawList.map((doc) => {
         const date = (new Timestamp(doc.date.seconds, doc.date.nanoseconds)).toDate();
@@ -172,39 +169,21 @@ function TodayTaskBoard({ uid }) {
     );
 }
 
-function UpcomingTaskBoard({ uid }) {
-    const getTasks = useCallback(() =>
-        collection(firestore, 'uncategoried', uid, 'todo-lists')
-        , [uid]);
-
-    const addTask = useCallback((data) =>
-        addDoc(collection(firestore, 'uncategoried', uid, 'todo-lists'), data)
-        , [uid]);
-
+function UpcomingTaskBoard({ uid, rawList }) {
     const setTaskData = useCallback((id, data) => {
         setDoc(doc(firestore, 'uncategoried', uid, 'todo-lists', id), data, { merge: true });
     }, [uid]);
-
 
     const deleteTask = useCallback((id) =>
         deleteDoc(doc(firestore, 'uncategoried', uid, 'todo-lists', id))
         , [uid]);
 
-    const [data, loading, error] = useDocument(getTasks());
-
-    if (loading) {
-        return <div className="w-full h-fit px-32 lg:px48 xl:px-60 py-6 z-1 flex items-center justify-center">
-            <i className="fa-solid fa-check-double text-xl text-blue-600"></i>
-        </div>;
-    }
-
-    const rawList = getList(data);
-
     const list = rawList.map((doc) => {
         const date = (new Timestamp(doc.date.seconds, doc.date.nanoseconds)).toDate();
 
         const now = new Date(Date.now());
-        const isGreater = (date.getFullYear() > now.getFullYear) ||
+
+        const isGreater = (date.getFullYear() > now.getFullYear()) ||
             (date.getFullYear() === now.getFullYear() && date.getMonth() > now.getMonth()) ||
             (date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() > now.getDate())
 
@@ -221,17 +200,12 @@ function UpcomingTaskBoard({ uid }) {
             <ul className="space-y-4">
                 {list}
             </ul>
-            <AddTaskFragment addTask={addTask} />
             <Outlet />
         </div>
     );
 }
 
-function ArchivedTaskBoard({ uid }) {
-    const getTasks = useCallback(() =>
-        collection(firestore, 'uncategoried', uid, 'todo-lists')
-        , [uid]);
-
+function ArchivedTaskBoard({ uid, rawList }) {
     const setTaskData = useCallback((id, data) => {
         setDoc(doc(firestore, 'uncategoried', uid, 'tasks', id), data, { merge: true });
     }, [uid]);
@@ -240,15 +214,6 @@ function ArchivedTaskBoard({ uid }) {
         deleteDoc(doc(firestore, 'uncategoried', uid, 'tasks', id))
         , [uid]);
 
-    const [data, loading, error] = useDocument(getTasks());
-
-    if (loading) {
-        return <div className="w-full h-fit px-32 lg:px48 xl:px-60 py-6 z-1 flex items-center justify-center">
-            <i className="fa-solid fa-check-double text-xl text-blue-600"></i>
-        </div>;
-    }
-
-    const rawList = getList(data);
     const list = rawList.map((doc) => {
         const date = (new Timestamp(doc.date.seconds, doc.date.nanoseconds)).toDate();
         if (doc.status === 'completed') {
@@ -270,6 +235,8 @@ function ArchivedTaskBoard({ uid }) {
 }
 
 function NormalTaskBoard({ uid, collectionId }) {
+    const { searchContent } = useSearchContent();
+
     const getTasks = useCallback(() =>
         collection(firestore, 'datas', uid, 'todo-lists', collectionId, 'tasks')
         , [collectionId, uid]);
@@ -309,7 +276,7 @@ function NormalTaskBoard({ uid, collectionId }) {
         </div>;
     }
 
-    const rawList = getList(data);
+    const rawList = getList(data, searchContent);
 
     const list = rawList.map((doc) => {
         const date = (new Timestamp(doc.date.seconds, doc.date.nanoseconds)).toDate();
@@ -339,20 +306,34 @@ function NormalTaskBoard({ uid, collectionId }) {
 }
 
 export default function TaskBoard() {
-
     const { user } = useRequireAuth();
     const { collectionId } = useParams();
+    const { searchContent } = useSearchContent();
+
+    const getTasks = useCallback(() =>
+        collection(firestore, 'uncategoried', user.uid, 'todo-lists')
+        , [user.uid]);
+
+    const [data, loading, error] = useDocument(getTasks());
+
+    if (loading) {
+        return <div className="w-full h-fit px-32 lg:px48 xl:px-60 py-6 z-1 flex items-center justify-center">
+            <i className="fa-solid fa-check-double text-xl text-blue-600"></i>
+        </div>;
+    }
+
+    const rawList = getList(data, searchContent);
 
     if (collectionId === 'today') {
-        return <TodayTaskBoard uid={user.uid} />;
+        return <TodayTaskBoard uid={user.uid} rawList={rawList} />;
     }
 
     if (collectionId === 'archived') {
-        return <ArchivedTaskBoard uid={user.uid} />;
+        return <ArchivedTaskBoard uid={user.uid} rawList={rawList} />;
     }
 
     if (collectionId === 'upcoming') {
-        return <UpcomingTaskBoard uid={user.uid} />;
+        return <UpcomingTaskBoard uid={user.uid} rawList={rawList} />;
     }
 
     return <NormalTaskBoard uid={user.uid} collectionId={collectionId} />;

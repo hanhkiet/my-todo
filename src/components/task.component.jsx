@@ -1,6 +1,6 @@
 import { CalendarIcon, CheckCircleIcon, CheckIcon, PencilIcon, TrashIcon, XIcon } from '@heroicons/react/outline';
 import { MenuAlt2Icon } from '@heroicons/react/outline';
-import { collection, deleteDoc, doc, setDoc } from 'firebase/firestore';
+import { deleteDoc, doc, setDoc } from 'firebase/firestore';
 import { useRef, useState } from 'react';
 import { Calendar } from 'react-calendar';
 import { useNavigate } from 'react-router-dom';
@@ -153,8 +153,8 @@ export default function Task({ id, uid, collectionId, title, description, status
                 <CheckCircleIcon className={`h-6 w-6 ${isCompleted ? 'text-blue-400 hover:text-gray-400' : 'text-gray-400 hover:text-blue-400'}  transition-colors duration-75`} />
             </button>
             <div className="space-y-1">
-                <h2 className="text-3xl leading-9">{title}</h2>
-                <p className="leading-6">{description}</p>
+                <h2 className={`text-3xl leading-9 ${isCompleted && 'line-through'}`}>{title}</h2>
+                <p className={`leading-6 ${isCompleted && 'line-through'}`}>{description}</p>
             </div>
             <div className='flex space-x-2'>
                 <SubtaskOption />

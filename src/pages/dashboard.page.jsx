@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import useRequireAuth from '../hooks/useRequireAuth';
 import SideBar from '../components/sidebar-component';
 import FunctionBar from '../components/function-bar.component';
-import { Outlet, useNavigate, useParams } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { ProvideSidebar } from '../context/SidebarContext';
-import Modal from '../components/modal.component';
+import { ProvideSearchContent } from '../context/SearchContentContext';
 
 export default function Dashboard() {
 
@@ -21,8 +21,10 @@ export default function Dashboard() {
             <div className='h-screen w-screen flex flex-row'>
                 <SideBar />
                 <div className='grow space-y-2 z-1 overflow-y-auto'>
-                    <FunctionBar />
-                    <Outlet />
+                    <ProvideSearchContent>
+                        <FunctionBar />
+                        <Outlet />
+                    </ProvideSearchContent>
                 </div>
             </div >
         </ProvideSidebar>

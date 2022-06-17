@@ -1,6 +1,6 @@
 import { Transition, Dialog } from "@headlessui/react";
 import { CheckCircleIcon, CheckIcon, PencilIcon, PlusIcon, TrashIcon, XIcon } from "@heroicons/react/outline";
-import { addDoc, collection, doc, setDoc, Timestamp } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, setDoc, Timestamp } from "firebase/firestore";
 import { useState, Fragment, useCallback, useRef } from "react";
 import { useDocument } from "react-firebase-hooks/firestore";
 import { useNavigate, useParams } from "react-router-dom";
@@ -24,6 +24,7 @@ function AddSubTaskFragment({ addSubTask }) {
         addSubTask({
             title,
             description,
+            status: "pending",
             created: Timestamp.now()
         });
         setInputing(false);
@@ -53,13 +54,19 @@ function AddSubTaskFragment({ addSubTask }) {
     </div>;
 }
 
-function SubTask() {
+function SubTask({ collectionId }) {
     const { user } = useRequireAuth();
-    const { collectionId, taskId } = useParams();
+    const params = useParams();
 
-    const getSubTasks = useCallback(() =>
-        collection(firestore, 'datas', user.uid, 'todo-lists', collectionId, 'tasks', taskId, 'sub-tasks')
-        , [collectionId, taskId, user.uid]);
+    if (!collectionId) {
+        collectionId = params.collectionId;
+    }
+
+    const { taskId } = params;
+
+    const getSubTasks = useCallback(() => {
+        return collection(firestore, 'datas', user.uid, 'todo-lists', collectionId, 'tasks', taskId, 'sub-tasks')
+    }, [collectionId, taskId, user.uid]);
 
     const addSubTask = useCallback((data) =>
         addDoc(collection(firestore, 'datas', user.uid, 'todo-lists', collectionId, 'tasks', taskId, 'sub-tasks'), data)
@@ -70,10 +77,14 @@ function SubTask() {
             , data, { merge: true })
         , [collectionId, taskId, user.uid]);
 
+    const deleteSubTask = useCallback((id) => {
+        deleteDoc(doc(firestore, 'datas', user.uid, 'todo-lists', collectionId, 'tasks', taskId, 'sub-tasks', id))
+    }, [collectionId, taskId, user.uid]);
+
     const [data, loading, error] = useDocument(getSubTasks());
 
     if (loading) {
-        return <p >Loading...</p>;
+        return <p>Loading...</p>;
     }
 
     const rawLists = data.docs.map((doc) => {
@@ -87,14 +98,14 @@ function SubTask() {
 
     const lists = rawLists.map((doc) => {
         return <li key={doc.id}>
-            <SubTaskDisplay {...doc} setSubTaskData={setSubTaskData} />
+            <SubTaskDisplay {...doc} setSubTaskData={setSubTaskData} deleteSubTask={deleteSubTask} />
         </li>
     });
 
     return (
         <div className="space-y-2">
             <h3 className="text-md font-semibold">Subtask</h3>
-            <ul className="space-y-3 overflow-y-scroll">
+            <ul className="space-y-2 overflow-y-scroll">
                 {lists}
                 <AddSubTaskFragment addSubTask={addSubTask} />
             </ul>
@@ -102,11 +113,13 @@ function SubTask() {
     );
 }
 
-function SubTaskDisplay({ id, title, description, setSubTaskData }) {
+function SubTaskDisplay({ id, title, description, status, setSubTaskData, deleteSubTask }) {
     const [inputing, setInputing] = useState(false);
 
     const titleRef = useRef(null);
     const descriptionRef = useRef(null);
+
+    const isCompleted = status === "completed";
 
     const handleChangeData = () => {
         let title = titleRef ? titleRef.current.value : null;
@@ -121,7 +134,11 @@ function SubTaskDisplay({ id, title, description, setSubTaskData }) {
     }
 
     const handleMarkCompleted = () => {
-        setSubTaskData(id, { status: "completed" });
+        setSubTaskData(id, { status: isCompleted ? 'pending' : 'completed' });
+    }
+
+    const handleDeleteSubTask = () => {
+        deleteSubTask(id);
     }
 
     if (inputing) {
@@ -145,19 +162,19 @@ function SubTaskDisplay({ id, title, description, setSubTaskData }) {
 
     return <div className="relative flex items-center space-x-2">
         <button onClick={handleMarkCompleted} className="outline-none">
-            <CheckCircleIcon className="h-5 w-5 text-gray-400 hover:text-blue-400" />
+            <CheckCircleIcon className={`h-5 w-5 ${isCompleted && 'text-blue-400 hover:text-gray-400'} text-gray-400 hover:text-blue-400`} />
         </button>
         <div className="group grow">
             <div className="absolute right-2 top-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-75">
                 <button onClick={() => setInputing(true)} className="outline-none">
                     <PencilIcon className="h-3 w-3 text-gray-500 hover:text-gray-400" />
                 </button>
-                <button className="outline-none">
+                <button onClick={handleDeleteSubTask} className="outline-none">
                     <TrashIcon className="h-3 w-3 text-red-500 hover:text-red-400" />
                 </button>
             </div>
-            <h4 className="text-lg">{title}</h4>
-            <p className="text-sm">{description}</p>
+            <h4 className={`text-md ${isCompleted && 'line-through'}`}>{title}</h4>
+            <p className={`text-xs ${isCompleted && 'line-through'}`}>{description}</p>
         </div>
     </div>;
 }
@@ -290,7 +307,7 @@ export default function TaskDetail() {
                             bg-white p-6 text-left align-middle shadow-xl transition-all space-y-4'>
                                 <TaskDisplay title={title} collectionId={data.data().collectionId}
                                     uid={user.uid} taskId={taskId} description={description} setTaskData={setTaskData} />
-                                <SubTask />
+                                <SubTask collectionId={data.data().collectionId} />
                             </Dialog.Panel>
                         </Transition.Child>
                     </div>
