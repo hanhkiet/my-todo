@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { firestore } from '../firebase';
 import { useOnClickOutside } from '../hooks/useOnClickOutside';
 import '../styles/calendar.css';
+import compareDateToNow from '../utils/compareDateToNow';
 import formatDate from '../utils/formatDate';
 
 function CalendarOption({ date, setDate }) {
@@ -29,8 +30,9 @@ function CalendarOption({ date, setDate }) {
 
     return (
         <div ref={calendarRef}>
-            <button onClick={handleClick} className='relative group outline-none flex items-center border-2 border-red-400 hover:border-red-500 rounded-md px-1 py-0.5 space-x-0.5'>
-                <CalendarIcon className='h-4 w-4 text-red-400 group-hover:text-red-500 cursor-pointer' />
+            <button onClick={handleClick} className='relative group outline-none flex items-center border-2 
+                        border-red-400 hover:border-red-600 rounded-md px-1 py-0.5 space-x-0.5'>
+                <CalendarIcon className='h-4 w-4 text-red-400 group-hover:text-red-600 cursor-pointer' />
                 <span className='text-xs text-gray-500'>{formatDate(value)}</span>
             </button>
             {isShow &&
@@ -48,16 +50,17 @@ function SubtaskOption() {
     }
 
     return (
-        <button onClick={handleClick}>
+        <button onClick={handleClick} className="flex items-center">
             <MenuAlt2Icon className='h-4 w-4 text-blue-400 hover:text-blue-600 cursor-pointer' />
         </button>
     );
 }
 
-export default function Task({ id, uid, collectionId, title, description, status, date, setTaskData, deleteTask }) {
+export default function Task({ id, uid, collectionId, title, description, status, hasSubTask,
+    date, setTaskData, deleteTask }) {
+    // console.log(hasSubTask);
 
     const [inputing, setInputing] = useState(false);
-
     const isCompleted = status === 'completed';
 
     const titleRef = useRef(null);
@@ -157,8 +160,11 @@ export default function Task({ id, uid, collectionId, title, description, status
                 <p className={`leading-6 ${isCompleted && 'line-through'}`}>{description}</p>
             </div>
             <div className='flex space-x-2'>
-                <SubtaskOption />
-                <CalendarOption date={date} setDate={setDate} />
+                {hasSubTask && <SubtaskOption />}
+                <div className='flex items-center space-x-2'>
+                    <CalendarOption date={date} setDate={setDate} />
+                    {(compareDateToNow(date) < 0 && !isCompleted) && <span className='text-sm text-red-600'>Overdue</span>}
+                </div>
             </div>
         </div >
     );

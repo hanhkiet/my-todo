@@ -1,6 +1,7 @@
 import { Transition, Dialog } from "@headlessui/react";
 import { CheckCircleIcon, CheckIcon, PencilIcon, PlusIcon, TrashIcon, XIcon } from "@heroicons/react/outline";
 import { addDoc, collection, deleteDoc, doc, setDoc, Timestamp } from "firebase/firestore";
+import { useEffect } from "react";
 import { useState, Fragment, useCallback, useRef } from "react";
 import { useDocument } from "react-firebase-hooks/firestore";
 import { useNavigate, useParams } from "react-router-dom";
@@ -68,8 +69,22 @@ function SubTask({ collectionId }) {
         return collection(firestore, 'datas', user.uid, 'todo-lists', collectionId, 'tasks', taskId, 'sub-tasks')
     }, [collectionId, taskId, user.uid]);
 
+    const [data, loading, error] = useDocument(getSubTasks());
+
+    useEffect(() => {
+        if (loading) {
+            return;
+        }
+
+        if (data.size === 0) {
+            setDoc(doc(firestore, 'datas', user.uid, 'todo-lists', collectionId, 'tasks', taskId), { hasSubTask: false }, { merge: true });
+        }
+    })
+
     const addSubTask = useCallback((data) =>
-        addDoc(collection(firestore, 'datas', user.uid, 'todo-lists', collectionId, 'tasks', taskId, 'sub-tasks'), data)
+        addDoc(collection(firestore, 'datas', user.uid, 'todo-lists', collectionId, 'tasks', taskId, 'sub-tasks'), data).then(() => {
+            setDoc(doc(firestore, 'datas', user.uid, 'todo-lists', collectionId, 'tasks', taskId), { hasSubTask: true }, { merge: true })
+        })
         , [collectionId, taskId, user.uid]);
 
     const setSubTaskData = useCallback((id, data) =>
@@ -81,7 +96,6 @@ function SubTask({ collectionId }) {
         deleteDoc(doc(firestore, 'datas', user.uid, 'todo-lists', collectionId, 'tasks', taskId, 'sub-tasks', id))
     }, [collectionId, taskId, user.uid]);
 
-    const [data, loading, error] = useDocument(getSubTasks());
 
     if (loading) {
         return <p>Loading...</p>;

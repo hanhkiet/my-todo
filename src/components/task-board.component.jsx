@@ -10,6 +10,7 @@ import { useOnClickOutside } from "../hooks/useOnClickOutside";
 import { useSearchContent } from '../context/SearchContentContext';
 import { Calendar } from "react-calendar";
 import formatDate from "../utils/formatDate";
+import compareDateToNow from "../utils/compareDateToNow";
 
 function getList(data, searchContent) {
     const list = data.docs.map((doc) => {
@@ -31,7 +32,8 @@ function getList(data, searchContent) {
 
     if (searchContent) {
         return sortedList.filter(doc => {
-            return doc.title.includes(searchContent) || doc.description.includes(searchContent);
+            return doc.title.toLowerCase().includes(searchContent)
+                || doc.description.toLowerCase().includes(searchContent);
         });
     } else {
         return sortedList;
@@ -130,6 +132,8 @@ function AddTaskFragment({ addTask }) {
 }
 
 function TodayTaskBoard({ uid, rawList }) {
+    const { searchContent } = useSearchContent();
+
     const addTask = useCallback((data) =>
         addDoc(collection(firestore, 'uncategoried', uid, 'todo-lists'), data)
         , [uid]);
@@ -163,7 +167,7 @@ function TodayTaskBoard({ uid, rawList }) {
             <ul className="space-y-4">
                 {list}
             </ul>
-            <AddTaskFragment addTask={addTask} />
+            {!searchContent && <AddTaskFragment addTask={addTask} />}
             <Outlet />
         </div>
     );
@@ -181,13 +185,7 @@ function UpcomingTaskBoard({ uid, rawList }) {
     const list = rawList.map((doc) => {
         const date = (new Timestamp(doc.date.seconds, doc.date.nanoseconds)).toDate();
 
-        const now = new Date(Date.now());
-
-        const isGreater = (date.getFullYear() > now.getFullYear()) ||
-            (date.getFullYear() === now.getFullYear() && date.getMonth() > now.getMonth()) ||
-            (date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() > now.getDate())
-
-        if (isGreater) {
+        if (compareDateToNow(date) > 0) {
             return <li key={doc.id} >
                 <Task {...doc} date={date} id={doc.id} uid={uid} collectionId={doc.collectionId}
                     setTaskData={setTaskData} deleteTask={deleteTask} />
@@ -280,7 +278,6 @@ function NormalTaskBoard({ uid, collectionId }) {
 
     const list = rawList.map((doc) => {
         const date = (new Timestamp(doc.date.seconds, doc.date.nanoseconds)).toDate();
-
         addToUncategoried(doc.id, {
             ...doc,
             collectionId,
@@ -299,7 +296,7 @@ function NormalTaskBoard({ uid, collectionId }) {
             <ul className="space-y-4">
                 {list}
             </ul>
-            <AddTaskFragment addTask={addTask} />
+            {!searchContent && <AddTaskFragment addTask={addTask} />}
             <Outlet />
         </div>
     );
