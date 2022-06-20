@@ -70,7 +70,7 @@ function useProvideAuth() {
     }
 
     const changePassword = (newPassword) => {
-        return updatePassword(newPassword);
+        return updatePassword(user, newPassword);
     }
 
     // Subscribe to user on mount

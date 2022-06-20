@@ -58,7 +58,6 @@ function SubtaskOption() {
 
 export default function Task({ id, uid, collectionId, title, description, status, hasSubTask,
     date, setTaskData, deleteTask }) {
-    // console.log(hasSubTask);
 
     const [inputing, setInputing] = useState(false);
     const isCompleted = status === 'completed';
@@ -77,13 +76,16 @@ export default function Task({ id, uid, collectionId, title, description, status
             title = 'Untitled';
         }
 
-        setTaskData(id, { title, description }).then(() => {
-            if (collectionId) {
-                setDoc(doc(firestore, 'datas', uid, 'todo-lists', collectionId, 'tasks', id),
-                    { title, description }, { merge: true });
-            }
-        });
+        setTaskData(id, { title, description });
         setInputing(false);
+        console.log(collectionId);
+
+        if (collectionId) {
+            setDoc(doc(firestore, 'datas', uid, 'todo-lists', collectionId, 'tasks', id),
+                { title, description }, { merge: true });
+        }
+
+        // setInputing(false);
     }
 
     const handleMarkCompleted = (event) => {

@@ -66,6 +66,7 @@ export default function SignInForm() {
                  hover:bg-blue-500 focus:bg-blue-500 py-2 rounded-md 
                  text-white cursor-pointer'>Sign in</button>
                 <div>
+                    {error && error.code === 'auth/user-not-found' && <p className="text-red-500">User not found</p>}
                     {error && error.code === 'auth/invalid-email' && <p className="text-red-500">Invalid email</p>}
                     {error && error.code === 'auth/wrong-password' && <p className="text-red-500">Wrong password</p>}
                     {error && error.code === 'auth/internal-error' && <p className="text-red-500">Something missing</p>}

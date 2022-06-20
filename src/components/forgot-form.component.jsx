@@ -15,6 +15,7 @@ export default function ForgotPasswordForm() {
             console.log(response);
             setIsSent(true);
         }).catch((error) => {
+            console.log(error);
             setError(error);
         });
     }
@@ -36,6 +37,7 @@ export default function ForgotPasswordForm() {
             <div>
                 {error && error.code === 'auth/invalid-email' && <p className="text-red-500">Invalid email</p>}
                 {error && error.code === 'auth/missing-email' && <p className="text-red-500">Email is missing</p>}
+                {error && error.code === 'auth/user-not-found' && <p className="text-red-500">User not found</p>}
                 {isSent && <p className="text-green-500">Your reset password email is sent! Check your email</p>}
             </div>
         </div>

@@ -1,10 +1,11 @@
 import { Transition, Dialog } from "@headlessui/react";
 import { doc, setDoc } from "firebase/firestore";
-import { useState, Fragment, useRef, useCallback, useEffect } from "react";
+import { useState, Fragment, useRef, useCallback } from "react";
 import { useDocument } from "react-firebase-hooks/firestore";
 import { useNavigate } from "react-router-dom";
 import { firestore } from "../firebase";
 import useRequireAuth from "../hooks/useRequireAuth";
+import { useAuth } from "../hooks/useAuth";
 
 function NameDisplay({ displayName, setData }) {
     const [inputing, setInputing] = useState(false);
@@ -68,7 +69,7 @@ function PasswordDisplay({ changePassword }) {
         setIsFailed(false);
         const password = passwordRef ? passwordRef.current.value.trim() : null;
 
-        if (password && password.length > 6) {
+        if (password && password.length >= 6) {
             setInputing(true);
         } else {
             setInputing(false);
@@ -80,6 +81,7 @@ function PasswordDisplay({ changePassword }) {
             .then(() => {
                 setIsSuccess(true);
             }).catch((error) => {
+                console.log(error);
                 setIsFailed(true);
             });
     }
@@ -103,7 +105,8 @@ export default function Settings() {
     const [isOpen, setIsOpen] = useState(true);
     const navigate = useNavigate();
 
-    const { user, changePassword } = useRequireAuth();
+    const { user } = useRequireAuth();
+    const { changePassword } = useAuth();
 
     const closeModal = () => {
         setIsOpen(false);
